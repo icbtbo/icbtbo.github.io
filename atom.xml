@@ -3,11 +3,11 @@
   <title>sjc的搬砖小屋</title>
   
   
-  <link href="http://example.com/atom.xml" rel="self"/>
+  <link href="https://icbtbo.github.io/atom.xml" rel="self"/>
   
-  <link href="http://example.com/"/>
+  <link href="https://icbtbo.github.io/"/>
   <updated>2020-12-03T09:01:23.914Z</updated>
-  <id>http://example.com/</id>
+  <id>https://icbtbo.github.io/</id>
   
   <author>
     <name>icbtbo</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>数据安全与隐私保护</title>
-    <link href="http://example.com/2020/12/03/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E4%B8%8E%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0/"/>
-    <id>http://example.com/2020/12/03/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E4%B8%8E%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0/</id>
+    <link href="https://icbtbo.github.io/2020/12/03/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E4%B8%8E%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0/"/>
+    <id>https://icbtbo.github.io/2020/12/03/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E4%B8%8E%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0/</id>
     <published>2020-12-03T07:45:00.000Z</published>
     <updated>2020-12-03T09:01:23.914Z</updated>
     
@@ -30,19 +30,19 @@
     
     
     
-    <category term="课程复习笔记" scheme="http://example.com/categories/%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
+    <category term="课程复习笔记" scheme="https://icbtbo.github.io/categories/%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
     
     
-    <category term="数据安全" scheme="http://example.com/tags/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8/"/>
+    <category term="数据安全" scheme="https://icbtbo.github.io/tags/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8/"/>
     
-    <category term="隐私保护" scheme="http://example.com/tags/%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4/"/>
+    <category term="隐私保护" scheme="https://icbtbo.github.io/tags/%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4/"/>
     
   </entry>
   
   <entry>
     <title>Hello World</title>
-    <link href="http://example.com/2020/11/30/hello-world/"/>
-    <id>http://example.com/2020/11/30/hello-world/</id>
+    <link href="https://icbtbo.github.io/2020/11/30/hello-world/"/>
+    <id>https://icbtbo.github.io/2020/11/30/hello-world/</id>
     <published>2020-11-30T08:55:34.000Z</published>
     <updated>2020-12-01T02:25:16.750Z</updated>
     
@@ -53,17 +53,17 @@
     
     
     
-    <category term="教程" scheme="http://example.com/categories/%E6%95%99%E7%A8%8B/"/>
+    <category term="教程" scheme="https://icbtbo.github.io/categories/%E6%95%99%E7%A8%8B/"/>
     
     
-    <category term="hexo" scheme="http://example.com/tags/hexo/"/>
+    <category term="hexo" scheme="https://icbtbo.github.io/tags/hexo/"/>
     
   </entry>
   
   <entry>
     <title>我的博客2</title>
-    <link href="http://example.com/2020/11/30/%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A22/"/>
-    <id>http://example.com/2020/11/30/%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A22/</id>
+    <link href="https://icbtbo.github.io/2020/11/30/%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A22/"/>
+    <id>https://icbtbo.github.io/2020/11/30/%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A22/</id>
     <published>2020-11-30T08:55:34.000Z</published>
     <updated>2020-12-03T10:59:06.427Z</updated>
     
@@ -74,10 +74,10 @@
     
     
     
-    <category term="test" scheme="http://example.com/categories/test/"/>
+    <category term="test" scheme="https://icbtbo.github.io/categories/test/"/>
     
     
-    <category term="test21" scheme="http://example.com/tags/test21/"/>
+    <category term="test21" scheme="https://icbtbo.github.io/tags/test21/"/>
     
   </entry>
   
