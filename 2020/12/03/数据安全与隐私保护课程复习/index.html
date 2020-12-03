@@ -1,0 +1,250 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>数据安全与隐私保护 | sjc的搬砖小屋</title><meta name="keywords" content="数据安全,隐私保护"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="研究生数据安全与隐私保护课程复习时记的一些笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据安全与隐私保护">
+<meta property="og:url" content="http://example.com/2020/12/03/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E4%B8%8E%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="研究生数据安全与隐私保护课程复习时记的一些笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/default_bg.png">
+<meta property="article:published_time" content="2020-12-03T07:45:00.000Z">
+<meta property="article:modified_time" content="2020-12-03T08:59:23.122Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="数据安全">
+<meta property="article:tag" content="隐私保护">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/default_bg.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="http://example.com/2020/12/03/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E4%B8%8E%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2020-12-03 16:59:23'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/default_bg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">数据安全与隐私保护</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-12-03T07:45:00.000Z" title="发表于 2020-12-03 15:45:00">2020-12-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-12-03T08:59:23.122Z" title="更新于 2020-12-03 16:59:23">2020-12-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0%E7%AC%94%E8%AE%B0/">课程复习笔记</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="差分隐私"><a href="#差分隐私" class="headerlink" title="差分隐私"></a>差分隐私</h1><h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p>差分隐私，英文名为differential privacy，顾名思义，保护的是数据源中一点微小的改动导致的隐私泄露问题。比如有一群人出去聚餐，那么其中某人是否是单身狗就属于差分隐私。</p>
+<p>为了更形式化地描述差分隐私，我们需要先定义相邻数据集。现给定两个数据集D和D’, 若它们有且仅有一条数据不一样，那我们就称此二者为相邻数据集。以上面数据集为例：假定有 <img src="https://www.zhihu.com/equation?tex=n" alt="[公式]"> 个人，他们是否是单身狗，形成一个集合 <img src="https://www.zhihu.com/equation?tex=%5C%7Ba_1,a_2,+%E2%80%A6,+a_n%5C%7D" alt="[公式]"> （其中 <img src="https://www.zhihu.com/equation?tex=a_i+=+0" alt="[公式]">或<img src="https://www.zhihu.com/equation?tex=1" alt="[公式]">），那么另一个集合当中只有一个人改变了单身状态，形成另一个集合 <img src="https://www.zhihu.com/equation?tex=%5C%7Ba_1%E2%80%99,+a_2%E2%80%99,+%E2%80%A6,+a_n%E2%80%99%5C%7D" alt="[公式]"> ，也就是只存在一个 <img src="https://www.zhihu.com/equation?tex=i" alt="[公式]"> 使得 <img src="https://www.zhihu.com/equation?tex=a_i+%5Cne+a_i%E2%80%99" alt="[公式]"> ，那么这两个集合便是相邻集合。</p>
+<p>那么对于一个随机化算法 <img src="https://www.zhihu.com/equation?tex=A" alt="[公式]"> （所谓随机化算法，是指对于特定输入，该算法的输出不是固定值，而是服从某一分布），其分别作用于两个相邻数据集得到的两个输出分布难以区分。差分隐私形式化的定义为：</p>
+<p><img src="https://www.zhihu.com/equation?tex=Pr%5C%7BA(D)+=+O%5C%7D+%E2%89%A4e%5E%5Cepsilon+%5Ccdot+Pr%5C%7BA(D%E2%80%99)+=+O%5C%7D+" alt="[公式]"></p>
+<p>也就是说，如果该算法作用于任何相邻数据集，得到一个特定输出 <img src="https://www.zhihu.com/equation?tex=O" alt="[公式]"> 的概率应差不多，那么我们就说这个算法能达到差分隐私的效果。也就是说，观察者通过观察输出结果很难察觉出数据集一点微小的变化，从而达到保护隐私的目的。</p>
+<h2 id="如何实现"><a href="#如何实现" class="headerlink" title="如何实现"></a>如何实现</h2><p>那如何才能得到差分隐私呢？最简单的方法是加噪音，也就是在输入或输出上加入随机化的噪音，以期将真实数据掩盖掉。比较常用的是加拉普拉斯噪音（Laplace noise）。由于拉普拉斯分布的数学性质正好与差分隐私的定义相契合，因此很多研究和应用都采用了此种噪音。还是以前面那个数据集为例，假设我们想要知道到底有多少人是单身狗，我们只需要计算 <img src="https://www.zhihu.com/equation?tex=%5Csum+a_i" alt="[公式]"> ，那么为了掩盖具体数值，实际输出值应为 <img src="https://www.zhihu.com/equation?tex=O=%5Csum+a_i+++r_%7Blap%7D" alt="[公式]"> ，相应地，另一个数据集输出的是 <img src="https://www.zhihu.com/equation?tex=O%E2%80%99=+%5Csum+a_i%E2%80%99+r_%7Blap%7D%E2%80%99" alt="[公式]"> 。这使得观察者分不清最终的输出是由哪个数据集产生的。</p>
+<p>前面描述的是差分隐私的严格定义。还有一种稍微放宽一点的定义为：</p>
+<p><img src="https://www.zhihu.com/equation?tex=Pr%5C%7BA(D)+=+O%5C%7D+%5Cle+e%5E%5Cepsilon+%5Ccdot+Pr%5C%7BA(D%E2%80%99)+=+O%5C%7D+++%5Cdelta+" alt="[公式]"></p>
+<p>其中 <img src="https://www.zhihu.com/equation?tex=%5Cdelta" alt="[公式]"> 是一个比较小的常数。要获取这种差分隐私，我们可以使用高斯噪音（Gaussian noise）。</p>
+<p>当然，对输入或输出加噪音会使得最终的输出结果不准确。而且由于噪音是为了掩盖一条数据，所以很多情况下数据的多少并不影响加的噪音的量。那么在数据量很大的情况下，噪音的影响很小，这时候就可以放心大胆地加噪音了，但数据量很小的情况下，噪音的影响就显得比较大，会使得最终结果偏离准确值较远而变得不可用。也有些算法不需要加噪音就能达到差分隐私的效果，听起来很美好，但这种算法通常要求数据满足一定的分布，这一点在现实中通常很难满足。</p>
+<h1 id="同态加密"><a href="#同态加密" class="headerlink" title="同态加密"></a>同态加密</h1><h2 id="什么是同态加密？"><a href="#什么是同态加密？" class="headerlink" title="什么是同态加密？"></a>什么是同态加密？</h2><p>提出第一个构造出全同态加密（Fully Homomorphic Encryption）[Gen09]的Craig Gentry给出的直观定义最好：</p>
+<blockquote>
+<p>A way to delegate processing of your data, without giving away access to it.</p>
+</blockquote>
+<p>这是什么意思呢？一般的加密方案关注的都是<strong>数据存储安全</strong>。即，我要给其他人发个加密的东西，或者要在计算机或者其他服务器上存一个东西，我要对数据进行加密后在发送或者存储。没有密钥的用户，不可能从加密结果中得到有关原始数据的任何信息。只有拥有密钥的用户才能够正确解密，得到原始的内容。我们注意到，这个过程中<strong>用户是不能对加密结果做任何操作的</strong>，只能进行存储、传输。对加密结果做任何操作，都将会导致错误的解密，甚至解密失败。</p>
+<p>同态加密方案最有趣的地方在于，其关注的是<strong>数据处理安全</strong>。同态加密提供了一种<strong>对加密数据进行处理的功能</strong>。也就是说，其他人可以对加密数据进行处理，但是处理过程不会泄露任何原始内容。同时，拥有密钥的用户对处理过的数据进行解密后，得到的正好是处理后的结果。</p>
+<p>有点抽象？我们举个实际生活中的例子。有个叫Alice的用户买到了一大块金子，她想让工人把这块金子打造成一个项链。但是工人在打造的过程中有可能会偷金子啊，毕竟就是一克金子也值很多钱的说… 因此能不能有一种方法，让工人可以对金块进行加工（delegate processing of your data），但是不能得到任何金子（without giving away access to it）？当然有办法啦，Alice可以这么做：</p>
+<ul>
+<li>Alice将金子锁在一个密闭的盒子里面，这个盒子安装了一个手套。</li>
+<li>工人可以带着这个手套，对盒子内部的金子进行处理。但是盒子是锁着的，所以工人不仅拿不到金块，连处理过程中掉下的任何金子都拿不到。</li>
+<li>加工完成后。Alice拿回这个盒子，把锁打开，就得到了金子。</li>
+</ul>
+<p>这里面的对应关系是：</p>
+<ul>
+<li>盒子：加密算法</li>
+<li>盒子上的锁：用户密钥</li>
+<li>将金块放在盒子里面并且用锁锁上：将数据用同态加密方案进行加密</li>
+<li>加工：应用同态特性，在无法取得数据的条件下直接对加密结果进行处理</li>
+<li>开锁：对结果进行解密，直接得到处理后的结果</li>
+</ul>
+<h2 id="同态加密哪里能用？"><a href="#同态加密哪里能用？" class="headerlink" title="同态加密哪里能用？"></a>同态加密哪里能用？</h2><p>这几年不是提了个云计算的概念嘛。同态加密几乎就是为云计算而量身打造的！我们考虑下面的情景：一个用户想要处理一个数据，但是他的计算机计算能力较弱。这个用户可以使用云计算的概念，让云来帮助他进行处理而得到结果。但是如果直接将数据交给云，无法保证安全性啊！于是，他可以使用同态加密，然后让云来对加密数据进行直接处理，并将处理结果返回给他。这样一来：</p>
+<ul>
+<li>用户向云服务商付款，得到了处理的结果；</li>
+<li>云服务商挣到了费用，并在不知道用户数据的前提下正确处理了数据；</li>
+</ul>
+<p>这方法简直完美啊有没有？！但是，这么好的特性肯定会带来一些缺点。同态加密现在最需要解决的问题在于：效率。效率一词包含两个方面，一个是加密数据的处理速度，一个是这个加密方案的数据存储量。我们可以直观地想一想这个问题：</p>
+<ul>
+<li><p>工人戴着手套加工金子，肯定没有直接加工来得快嘛~ 也就是说，隔着手套处理，精准度会变差（现有构造会有误差传递问题），加工的时间也会变得更长（密文的操作花费更长的时间），工人需要隔着操作，因此也需要更专业（会正确调用算法）。</p>
+</li>
+<li><p>金子放在盒子里面，为了操作，总得做一个稍微大一点的盒子吧，要不然手操作不开啊（存储空间问题）。里面也要放各种工具吧，什么电钻啦，锉刀啦，也需要空间吧？</p>
+</li>
+</ul>
+<h1 id="K匿名算法"><a href="#K匿名算法" class="headerlink" title="K匿名算法"></a>K匿名算法</h1><p>在大数据的时代，很多机构需要面向公众或研究者发布其收集的数据，例如医疗数据，地区政务数据等。这些数据中往往包含了个人用户或企业用户的隐私数据，这要求发布机构在发布前对数据进行脱敏处理。K匿名算法是比较通用的一种数据脱敏方法。举例来说，如下图是两张表，一张是用户的会员注册信息表，一张是对外发布的医疗信息表。</p>
+<p><a target="_blank" rel="noopener" href="https://imgchr.com/i/D7PRmV"><img src="https://s3.ax1x.com/2020/12/03/D7PRmV.png" alt="D7PRmV.png"></a></p>
+<p><a target="_blank" rel="noopener" href="https://imgchr.com/i/D7iq3j"><img src="https://s3.ax1x.com/2020/12/03/D7iq3j.png" alt="D7iq3j.png"></a></p>
+<p>第二张医疗信息表中，虽然已经把用户姓名，身份证号等个人关联信息抹去，但如果直接发布这样简单匿名处理的数据，同样会带来数据泄露的风险。因为通过两张不同数据来源的表进行关联，对出生日期，性别，邮编的值进行匹配，可以定位出张三患有心脏病的隐私数据。这种通过某些属性与外部表链接的攻击称为链接攻击。</p>
+<p>如上图两个表所示，每一行代表用户的一条记录，每一列表示一个属性。每一个记录与一个特定的用户/个体关联，这些属性可以分为三类：</p>
+<ul>
+<li><p>标识符(Explicit Identifier)：可以直接确定一个个体，如：身份证号，姓名等。</p>
+</li>
+<li><p>准标识符集(Quasi-identifier Attribute set): 可以和外部表链接来识别个体的最小属性集，如：邮编，生日，性别等。</p>
+</li>
+<li><p>敏感数据(Sensitive Attributes)：用户不希望被人知道的数据，如：薪水，疾病历史，购买偏好等。</p>
+</li>
+</ul>
+<p>K-匿名(K-Anonymity)是Samarati和Sweeney在1998年提出的技术，该技术可以保证存储在发布数据集中的每条个体记录对于敏感属性不能与其他的K-1个个体相区分，即K-匿名机制要求同一个准标识符至少要有K条记录，因此观察者无法通过准标识符连接记录。</p>
+<p>K-匿名的具体使用如下：隐私数据脱敏的第一步通常是对所有标识符列进行移除或是脱敏处理，使得攻击者无法直接标识用户。但是攻击者还是有可能通过多个准标识列的属性值识别到个人。攻击者可能通过（例如知道某个人的邮编，生日，性别等）包含个人信息的开放数据库获得特定个人的准标识列属性值，并与大数据平台数据进行匹配，从而得到特定个人的敏感信息。为了避免这种情况的发生，通常也需要对准标识列进行脱敏处理，如数据泛化等。数据泛化是将准标识列的数据替换为语义一致但更通用的数据，以上述医疗数据为例，对邮编和年龄泛化后的数据如下图所示。</p>
+<p><a target="_blank" rel="noopener" href="https://imgchr.com/i/D7PfTU"><img src="https://s3.ax1x.com/2020/12/03/D7PfTU.png" alt="D7PfTU.png"></a></p>
+<p>经过泛化后，有多条纪录的准标识列属性值相同。所有准标识列属性值相同的行的集合被称为相等集。K-匿名要求对于任意一行纪录，其所属的相等集内纪录数量不小于K，即至少有K-1条纪录的准标识列属性值与该条纪录相同。</p>
+<p><strong>K-匿名技术就是每个相等集(或称为等价组)中的记录个数为K个，那么当针对大数据的攻击者在进行链接攻击时，对于任意一条记录的攻击同时会关联到相等集中的其他K-1条记录。这种特性使得攻击者无法确定与特定用户相关的记录，从而保护了用户的隐私。</strong></p>
+<p>K-匿名技术能保证以下三点：</p>
+<ul>
+<li>攻击者无法知道某特定个人是否在公开的数据中</li>
+<li>给定一个人，攻击者无法确认他是否有某项敏感属性</li>
+<li>攻击者无法确认某条数据对应的是哪个人</li>
+</ul>
+<p>但从另外一个角落来看，K-匿名技术虽然可以阻止身份信息的公开，但无法防止属性信息的公开，导致其无法抵抗同质攻击，背景知识攻击，补充数据攻击等情况：</p>
+<ul>
+<li>同质攻击: 如在上面的K-匿名医疗信息表中，第1-3条记录的敏感数据是一致的，因此这时候K-匿名就失效。观察者只要知道表中某一个用户的邮编是476***，年龄在20多岁，就可以确定他有心脏病。</li>
+<li>背景攻击: 如果观察者通过邮编和年龄确定用户王一在K-匿名医疗信息表的等价集3中，同时观察者知道王一患心脏病的可能很小，那么他就可以确定王一曾经骨折。</li>
+</ul>
+<p>补充数据攻击：当公开的数据有多种类型，如果他们的K-匿名方法不同，那么攻击者可以通过关联多种数据推测用户信息。</p>
+<h1 id="L多样化"><a href="#L多样化" class="headerlink" title="L多样化"></a>L多样化</h1><h2 id="什么是L多样化"><a href="#什么是L多样化" class="headerlink" title="什么是L多样化"></a>什么是L多样化</h2><p>为了解决同质性攻击和背景知识攻击所带来的隐私泄露，Machanavajjhala等人提出了L-多样性(l-diversity)模型。简单来说，就是在公开的数据中，每一个等价类里的敏感属性必须具有多样性，即L-多样性保证每一个等价类里，敏感属性至少有L个不同的取值，通过这样L-多样性使得攻击者最多只能以1/L的概率确认某个体的敏感信息，从而保证用户的隐私信息不能通过背景知识，同质知识等方法推断出来。</p>
+<p><a target="_blank" rel="noopener" href="https://imgchr.com/i/D7FjRH"><img src="https://s3.ax1x.com/2020/12/03/D7FjRH.png" alt="D7FjRH.png"></a></p>
+<p>如上图所示，在每一个等价集中，包含至少3个以上不同的属性值，那么这部分公开数据就满足3-diversity的属性。</p>
+<blockquote>
+<p>要实施L-多样性模型，除了上述的不可区分属性方式，通常还可以引入其他的统计方法来实现：</p>
+<ol>
+<li>不可区分L-多样性(Distinction L-Diversity): 在同一个等价类中至少出现L个不同的敏感属性值。</li>
+<li>基于概率的L-多样性(Probabilistic L-Diversity)：在一个类型中出现频率最高的值的概率不大于1/L；</li>
+<li>基于熵的L-多样性(Entropy L-Diversity): 在一个等价类中敏感数据分布的熵至少是log(L)；</li>
+<li>递归(C,L)-多样性(Recursive (C,L)-Diversity): 通过递归的方式，保证等价类中最经常出现的值的出现频率不要太高。</li>
+<li>递归(C1, C2, L)-多样性(Recursive(C1,C2,L)-Diversity): 通过递归的方式，保证等价类中最经常出现的值的出现频率不要太高, 同时还保证了等价类中频率最低的敏感属性出现的频率不能太低。</li>
+</ol>
+</blockquote>
+<h2 id="L-多样性也具有一定局限性"><a href="#L-多样性也具有一定局限性" class="headerlink" title="L-多样性也具有一定局限性"></a>L-多样性也具有一定局限性</h2><ol>
+<li>敏感属性比例的严重不均衡导致L-多样性难以实现，例如某疾病检测报告，敏感属性只有“阳性”和“阴性”，分别占比1%和99%，阴性人群并不在乎被人知道结果，但阳性人群可能很敏感。如果在一个等价类中均为阴性，是没有必要实现可区分的2-Diversity。</li>
+<li>偏斜性攻击(Skewness Attack)：如果在上面那个例子中，我们保证了阳性和阴性出现的概率相同，虽然保证了多样性，但是泄露隐私的可能性会变大，因为L-多样性并没有考虑敏感属性的总体分布。</li>
+</ol>
+<p>L-多样性没有考虑敏感属性的语义，而导致敏感信息的泄露。例如敏感属性是“工资”，某一等价类中的取值全为2K-3K之间，那么观察者只要知道用户在这一等价类就可以知道其工资处于较低水平，具体数值观察者并不关心。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2020/12/03/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E4%B8%8E%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0/">http://example.com/2020/12/03/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E4%B8%8E%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8/">数据安全</a><a class="post-meta__tags" href="/tags/%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4/">隐私保护</a></div><div class="post_share"><div class="social-share" data-image="/img/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2020/11/30/hello-world/"><img class="next-cover" src="/img/hexo.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Hello World</div></div></a></div></nav></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B7%AE%E5%88%86%E9%9A%90%E7%A7%81"><span class="toc-number">1.</span> <span class="toc-text">差分隐私</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E5%BF%B5"><span class="toc-number">1.1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.2.</span> <span class="toc-text">如何实现</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8C%E6%80%81%E5%8A%A0%E5%AF%86"><span class="toc-number">2.</span> <span class="toc-text">同态加密</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%90%8C%E6%80%81%E5%8A%A0%E5%AF%86%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">什么是同态加密？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E6%80%81%E5%8A%A0%E5%AF%86%E5%93%AA%E9%87%8C%E8%83%BD%E7%94%A8%EF%BC%9F"><span class="toc-number">2.2.</span> <span class="toc-text">同态加密哪里能用？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#K%E5%8C%BF%E5%90%8D%E7%AE%97%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">K匿名算法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#L%E5%A4%9A%E6%A0%B7%E5%8C%96"><span class="toc-number">4.</span> <span class="toc-text">L多样化</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFL%E5%A4%9A%E6%A0%B7%E5%8C%96"><span class="toc-number">4.1.</span> <span class="toc-text">什么是L多样化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#L-%E5%A4%9A%E6%A0%B7%E6%80%A7%E4%B9%9F%E5%85%B7%E6%9C%89%E4%B8%80%E5%AE%9A%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">4.2.</span> <span class="toc-text">L-多样性也具有一定局限性</span></a></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2020/12/03/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E4%B8%8E%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0/" title="数据安全与隐私保护"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数据安全与隐私保护"/></a><div class="content"><a class="title" href="/2020/12/03/%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E4%B8%8E%E9%9A%90%E7%A7%81%E4%BF%9D%E6%8A%A4%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0/" title="数据安全与隐私保护">数据安全与隐私保护</a><time datetime="2020-12-03T07:45:00.000Z" title="发表于 2020-12-03 15:45:00">2020-12-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/11/30/hello-world/" title="Hello World"><img src="/img/hexo.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hello World"/></a><div class="content"><a class="title" href="/2020/11/30/hello-world/" title="Hello World">Hello World</a><time datetime="2020-11-30T08:55:34.000Z" title="发表于 2020-11-30 16:55:34">2020-11-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/11/30/%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A22/" title="我的博客2"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="我的博客2"/></a><div class="content"><a class="title" href="/2020/11/30/%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A22/" title="我的博客2">我的博客2</a><time datetime="2020-11-30T08:55:34.000Z" title="发表于 2020-11-30 16:55:34">2020-11-30</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script></div></body></html>
