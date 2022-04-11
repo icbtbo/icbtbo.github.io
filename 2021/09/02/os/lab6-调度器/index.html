@@ -1,0 +1,302 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>os_lab6:调度器 | sjc的搬砖小屋</title><meta name="keywords" content="操作系统"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="课程主页：https:&#x2F;&#x2F;www.xuetangx.com&#x2F;course&#x2F;THU08091000267&#x2F;5883104?channel&#x3D;i.area.learn_title实验指导书：https:&#x2F;&#x2F;objectkuan.gitbooks.io&#x2F;ucore-docs&#x2F;content&#x2F;github：https:&#x2F;&#x2F;github.com&#x2F;chyyuu&#x2F;ucore_os_lab (master 分支)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="os_lab6:调度器">
+<meta property="og:url" content="https://icbtbo.github.io/2021/09/02/os/lab6-%E8%B0%83%E5%BA%A6%E5%99%A8/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="课程主页：https:&#x2F;&#x2F;www.xuetangx.com&#x2F;course&#x2F;THU08091000267&#x2F;5883104?channel&#x3D;i.area.learn_title实验指导书：https:&#x2F;&#x2F;objectkuan.gitbooks.io&#x2F;ucore-docs&#x2F;content&#x2F;github：https:&#x2F;&#x2F;github.com&#x2F;chyyuu&#x2F;ucore_os_lab (master 分支)">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://icbtbo.github.io/img/default_bg.png">
+<meta property="article:published_time" content="2021-09-02T11:40:42.000Z">
+<meta property="article:modified_time" content="2021-09-08T09:25:31.203Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="操作系统">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://icbtbo.github.io/img/default_bg.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="https://icbtbo.github.io/2021/09/02/os/lab6-%E8%B0%83%E5%BA%A6%E5%99%A8/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-09-08 17:25:31'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/default_bg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">os_lab6:调度器</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-09-02T11:40:42.000Z" title="发表于 2021-09-02 19:40:42">2021-09-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-09-08T09:25:31.203Z" title="更新于 2021-09-08 17:25:31">2021-09-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%B8%85%E5%8D%8Eos%E5%AE%9E%E9%AA%8C/">清华os实验</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>课程主页：<a target="_blank" rel="noopener" href="https://www.xuetangx.com/course/THU08091000267/5883104?channel=i.area.learn_title">https://www.xuetangx.com/course/THU08091000267/5883104?channel=i.area.learn_title</a><br>实验指导书：<a target="_blank" rel="noopener" href="https://objectkuan.gitbooks.io/ucore-docs/content/">https://objectkuan.gitbooks.io/ucore-docs/content/</a><br>github：<a target="_blank" rel="noopener" href="https://github.com/chyyuu/ucore_os_lab">https://github.com/chyyuu/ucore_os_lab</a> (master 分支)</p>
+</blockquote>
+<h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h2><p>进程调度算法。</p>
+<h2 id="改动点"><a href="#改动点" class="headerlink" title="改动点"></a>改动点</h2><p>相比于 <code>lab5</code> 源代码，<code>lab6</code> 主要做了如下改动：</p>
+<ul>
+<li><p><code>proc.h</code> 扩展 <code>struct proc_struct</code> 成员属性</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">proc_struct</span> &#123;</span></span><br><span class="line">    ... <span class="comment">// 同以往结构的属性</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">run_queue</span> *<span class="title">rq</span>;</span>                       <span class="comment">// 该进程所在的 run_queue</span></span><br><span class="line">    <span class="keyword">list_entry_t</span> run_link;                      <span class="comment">// 以链表形式链接各就绪进程</span></span><br><span class="line">    <span class="keyword">int</span> time_slice;                             <span class="comment">// 该进程所占用的 CPU 时间片</span></span><br><span class="line">    <span class="keyword">skew_heap_entry_t</span> lab6_run_pool;            <span class="comment">// FOR LAB6 ONLY: 以优先队列形式链接各就绪进程</span></span><br><span class="line">    <span class="comment">// 当前进程的 stride 和优先级属性。</span></span><br><span class="line">    <span class="keyword">uint32_t</span> lab6_stride;                       <span class="comment">// FOR LAB6 ONLY: 该进程对应的 stride 属性 (此二者用于 stride 调度算法)</span></span><br><span class="line">    <span class="keyword">uint32_t</span> lab6_priority;                     <span class="comment">// FOR LAB6 ONLY: 该进程对应的 priority 属性</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>alloc_proc()</code> 实现中，增加这些属性的初始化工作：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">list_init(&amp;(proc-&gt;run_link));</span><br><span class="line">proc-&gt;time_slice = <span class="number">0</span>;</span><br><span class="line">skew_heap_init(&amp;(proc-&gt;lab6_run_pool));</span><br><span class="line">proc-&gt;lab6_stride = <span class="number">0</span>;</span><br><span class="line">proc-&gt;lab6_priority = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>schedule.[ch]</code> 增加调度器框架信息</p>
+<p><code>ucore</code> 调度器框架使用 <code>struct sched_class</code> 加以表示：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_class</span> &#123;</span></span><br><span class="line">    <span class="comment">// 调度器名称</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *name;</span><br><span class="line">    <span class="comment">// 初始化调度器</span></span><br><span class="line">    <span class="keyword">void</span> (*init)(struct run_queue *rq);</span><br><span class="line">    <span class="comment">// 进程入队</span></span><br><span class="line">    <span class="keyword">void</span> (*enqueue)(struct run_queue *rq, struct proc_struct *proc);</span><br><span class="line">    <span class="comment">// 进程出队</span></span><br><span class="line">    <span class="keyword">void</span> (*dequeue)(struct run_queue *rq, struct proc_struct *proc);</span><br><span class="line">    <span class="comment">// 选择待运行的进程</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">proc_struct</span> *(*<span class="title">pick_next</span>)(<span class="keyword">struct</span> <span class="title">run_queue</span> *<span class="title">rq</span>);</span></span><br><span class="line">    <span class="comment">// 时钟触发的处理函数</span></span><br><span class="line">    <span class="keyword">void</span> (*proc_tick)(struct run_queue *rq, struct proc_struct *proc);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><code>ucore</code> 调度器具体使用 <code>struct run_queue</code> 进行处理：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">run_queue</span> &#123;</span></span><br><span class="line">    <span class="keyword">list_entry_t</span> run_list;						<span class="comment">// 进程集合的链表形式    </span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> proc_num;						<span class="comment">// 进程集合总数</span></span><br><span class="line">    <span class="keyword">int</span> max_time_slice;							<span class="comment">// 进程运行的最大时间片</span></span><br><span class="line">    <span class="keyword">skew_heap_entry_t</span> *lab6_run_pool;			<span class="comment">// For LAB6 ONLY: 进程集合的优先队列形式</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>trap.c</code> 更新时钟中断的处理程序</p>
+<p>每当发生时钟中断，调用 <code>ucore</code> 调度器的 <code>proc_tick()</code> 函数，从而使得调度器能够动态感知时间变化，并更新相关进程的某些调度属性信息。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> IRQ_OFFSET + IRQ_TIMER:</span><br><span class="line">        ticks++;</span><br><span class="line">        sched_class_proc_tick(current);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>default_sched.[ch]</code> 实现 Round-Robin 调度算法</p>
+</li>
+<li><p><code>sched.c</code> 更新 <code>wakeup_proc()</code> 操作</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">wakeup_proc</span><span class="params">(struct proc_struct *proc)</span> </span>&#123;</span><br><span class="line">    assert(proc-&gt;state != PROC_ZOMBIE);</span><br><span class="line">    <span class="keyword">bool</span> intr_flag;</span><br><span class="line">    local_intr_save(intr_flag);</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// proc 若未处于 RUNNABLE 状态，则置为此状态。</span></span><br><span class="line">        <span class="keyword">if</span> (proc-&gt;state != PROC_RUNNABLE) &#123;</span><br><span class="line">            proc-&gt;state = PROC_RUNNABLE;</span><br><span class="line">            proc-&gt;wait_state = <span class="number">0</span>;</span><br><span class="line">            <span class="comment">// 若当前进程并非 proc，则将 proc 入队 (出现情况：当前进程创建子进程，子进程的 do_fork 最后一步会调用此函数，从而将其入队管理)。</span></span><br><span class="line">            <span class="keyword">if</span> (proc != current) &#123;</span><br><span class="line">                sched_class_enqueue(proc);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            warn(<span class="string">&quot;wakeup runnable process.\n&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    local_intr_restore(intr_flag);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>skew_heap.h</code> 提供斜堆的具体实现</p>
+</li>
+</ul>
+<h2 id="练习一"><a href="#练习一" class="headerlink" title="练习一"></a>练习一</h2><p>该练习用于了解 Round-Robin 调度算法的具体实现。</p>
+<p>Round-Robin 调度算法比较简单，直接查看其源代码实现：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 初始化 RR，只需初始化进程集合，并重置相关属性即可 (max_time_slice 属性由调用者自主设置)。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">RR_init</span><span class="params">(struct run_queue *rq)</span> </span>&#123;</span><br><span class="line">    list_init(&amp;(rq-&gt;run_list));</span><br><span class="line">    rq-&gt;proc_num = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 入队。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">RR_enqueue</span><span class="params">(struct run_queue *rq, struct proc_struct *proc)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 放置当前进程于进程集合尾部。</span></span><br><span class="line">    list_add_before(&amp;(rq-&gt;run_list), &amp;(proc-&gt;run_link));</span><br><span class="line">    <span class="comment">// 如果其所剩时间片为 0，或不符合条件，则重置之。</span></span><br><span class="line">    <span class="keyword">if</span> (proc-&gt;time_slice == <span class="number">0</span> || proc-&gt;time_slice &gt; rq-&gt;max_time_slice) &#123;</span><br><span class="line">        proc-&gt;time_slice = rq-&gt;max_time_slice;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 更新其他属性。</span></span><br><span class="line">    proc-&gt;rq = rq;</span><br><span class="line">    rq-&gt;proc_num ++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 出队，进程集合中删除此进程，并初始化此进程的 run_link 即可。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">RR_dequeue</span><span class="params">(struct run_queue *rq, struct proc_struct *proc)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// </span></span><br><span class="line">    list_del_init(&amp;(proc-&gt;run_link));</span><br><span class="line">    rq-&gt;proc_num --;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 选择进程集合首部元素作为待运行的进程即可。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> struct proc_struct * <span class="title">RR_pick_next</span><span class="params">(struct run_queue *rq)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">list_entry_t</span> *le = list_next(&amp;(rq-&gt;run_list));</span><br><span class="line">    <span class="keyword">if</span> (le != &amp;(rq-&gt;run_list)) &#123;</span><br><span class="line">        <span class="keyword">return</span> le2proc(le, run_link);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 每次发生时钟中断，更新当前进程可用的时间片，如果可用时间片为 0，则设置 need_resched 以调度其他进程 (该字段在 trap() 的 if(!in_kernel) 内起作用)。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">RR_proc_tick</span><span class="params">(struct run_queue *rq, struct proc_struct *proc)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (proc-&gt;time_slice &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        proc-&gt;time_slice --;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (proc-&gt;time_slice == <span class="number">0</span>) &#123;</span><br><span class="line">        proc-&gt;need_resched = <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将默认的处理器调度算法设为RR</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_class</span> <span class="title">default_sched_class</span> =</span> &#123;</span><br><span class="line">    .name = <span class="string">&quot;RR_scheduler&quot;</span>,</span><br><span class="line">    .init = RR_init,</span><br><span class="line">    .enqueue = RR_enqueue,</span><br><span class="line">    .dequeue = RR_dequeue,</span><br><span class="line">    .pick_next = RR_pick_next,</span><br><span class="line">    .proc_tick = RR_proc_tick,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>结合具体算法描述<strong>ucore调度执行过程</strong>：</p>
+<ul>
+<li>正如前文中所提及到的那样，在ucore中调用调度器的主体函数（不包括init，proc_tick）的代码仅存在在wakeup_proc和schedule，前者的作用在于将某一个指定进程放入可执行进程队列中，后者在于将当前执行的进程放入可执行队列中，然后将队列中选择的下一个执行的进程取出执行；</li>
+<li>当需要将某一个进程加入就绪进程队列中，则需要将这个进程的能够使用的时间片进行初始化，然后将其插入到使用链表组织的队列的对尾；这就是具体的Round-Robin enqueue函数的实现；</li>
+<li>当需要将某一个进程从就绪队列中取出的时候，只需要将其直接删除即可；</li>
+<li>当需要取出执行的下一个进程的时候，只需要将就绪队列的队头取出即可；</li>
+<li>每当出现一个时钟中断，则会将当前执行的进程的剩余可执行时间减1，一旦减到了0，则将其标记为可以被调度的，这样在ISR中的后续部分就会调用schedule函数将这个进程切换出去；</li>
+</ul>
+<p>简要说明如何设计实现<strong>多级反馈队列调度算法</strong>：</p>
+<ul>
+<li><p>在proc_struct中添加总共N个多级反馈队列的入口，每个队列都有着各自的优先级，编号越大的队列优先级约低，并且优先级越低的队列上时间片的长度越大，为其上一个优先级队列的两倍；并且在PCB中记录当前进程所处的队列的优先级；</p>
+</li>
+<li><p>处理调度算法初始化的时候需要同时对N个队列进行初始化；</p>
+</li>
+<li><p>在处理将进程加入到就绪进程集合的时候，观察这个进程的时间片有没有使用完，如果使用完了，就将所在队列的优先级调低，加入到优先级低1级的队列中去，如果没有使用完时间片，则加入到当前优先级的队列中去；</p>
+</li>
+<li><p>在同一个优先级的队列内使用时间片轮转算法；</p>
+</li>
+<li><p>在选择下一个执行的进程的时候，有限考虑高优先级的队列中是否存在任务，如果不存在才转而寻找较低优先级的队列；（有可能导致饥饿）</p>
+</li>
+<li><p>从就绪进程集合中删除某一个进程就只需要在对应队列中删除即可；</p>
+</li>
+<li><p>处理时间中断的函数不需要改变；</p>
+</li>
+<li><p>至此完成了多级反馈队列调度算法的具体设计；</p>
+</li>
+</ul>
+</blockquote>
+<h2 id="练习二"><a href="#练习二" class="headerlink" title="练习二"></a>练习二</h2><p>该练习用于实现 Stride 调度算法。</p>
+<p>首先简单介绍 Stride 调度算法的基本思想：Stride 调用算法仍是基于时间片以调度进程，但是它每次选择进展最慢 (表征进程的 <code>struct proc_struct</code> 结构中，<code>stride</code> 表示当前进程的进展度，<code>BIG_STRIDE / priority</code> 表征当前进程被调度后的进展增加值) 的进程加以调度。</p>
+<blockquote>
+<p>stride相关资料：<a target="_blank" rel="noopener" href="http://web.eecs.umich.edu/~mosharaf/Readings/Stride.pdf">http://web.eecs.umich.edu/~mosharaf/Readings/Stride.pdf</a></p>
+</blockquote>
+<p>接下来，给出 Stride 调度算法的具体实现：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// BIG_STRIDE 取值具有一定原因，它可以保证即使 stride 取值溢出，仍可正确实现两个进程的 stride 比较操作，原理请看下方问答。</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BIG_STRIDE    (((uint32_t)-1) / 2) <span class="comment">// 即 0X7FFFFFFF</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 两个进程的 stride 比较操作，用于构建斜堆。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">proc_stride_comp_f</span><span class="params">(<span class="keyword">void</span> *a, <span class="keyword">void</span> *b)</span> </span>&#123;</span><br><span class="line">     <span class="class"><span class="keyword">struct</span> <span class="title">proc_struct</span> *<span class="title">p</span> =</span> le2proc(a, lab6_run_pool);</span><br><span class="line">     <span class="class"><span class="keyword">struct</span> <span class="title">proc_struct</span> *<span class="title">q</span> =</span> le2proc(b, lab6_run_pool);</span><br><span class="line">     <span class="keyword">int32_t</span> c = p-&gt;lab6_stride - q-&gt;lab6_stride;</span><br><span class="line">     <span class="keyword">if</span> (c &gt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">     <span class="keyword">else</span> <span class="keyword">if</span> (c == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">     <span class="keyword">else</span> <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化 Stride，只需初始化进程集合，并重置相关属性即可。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">stride_init</span><span class="params">(struct run_queue *rq)</span> </span>&#123;</span><br><span class="line">     list_init(&amp;(rq-&gt;run_list)); <span class="comment">// 是否初始化进程集合的链表形式都可，因为不会用到。</span></span><br><span class="line">     rq-&gt;lab6_run_pool = <span class="literal">NULL</span>;</span><br><span class="line">     rq-&gt;proc_num = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 入队，插入当前进程至斜堆，并更新相关属性。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">stride_enqueue</span><span class="params">(struct run_queue *rq, struct proc_struct *proc)</span> </span>&#123;  </span><br><span class="line">     rq-&gt;lab6_run_pool = skew_heap_insert(rq-&gt;lab6_run_pool, &amp;(proc-&gt;lab6_run_pool), proc_stride_comp_f);</span><br><span class="line">     <span class="comment">// 如果尚未初始化 priority，则默认取值为 1。</span></span><br><span class="line">     <span class="keyword">if</span> (proc-&gt;lab6_priority == <span class="number">0</span>)</span><br><span class="line">     &#123;</span><br><span class="line">          proc-&gt;lab6_priority = <span class="number">1</span>;</span><br><span class="line">     &#125;</span><br><span class="line">     </span><br><span class="line">     <span class="keyword">if</span> (proc-&gt;time_slice == <span class="number">0</span> || proc-&gt;time_slice &gt; rq-&gt;max_time_slice) &#123;</span><br><span class="line">           proc-&gt;time_slice = rq-&gt;max_time_slice;</span><br><span class="line">    &#125;</span><br><span class="line">     </span><br><span class="line">     proc-&gt;rq = rq;</span><br><span class="line">     rq-&gt;proc_num++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 出队，斜堆删除特定进程。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">stride_dequeue</span><span class="params">(struct run_queue *rq, struct proc_struct *proc)</span> </span>&#123;</span><br><span class="line">     rq-&gt;lab6_run_pool = skew_heap_remove(rq-&gt;lab6_run_pool, &amp;(proc-&gt;lab6_run_pool), proc_stride_comp_f);</span><br><span class="line">     rq-&gt;proc_num--;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 选择 stride 最小的进程作为待运行的进程（斜堆的顶就是 stride 值最小的进程），并更新其 stride 取值。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> struct proc_struct * <span class="title">stride_pick_next</span><span class="params">(struct run_queue *rq)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">if</span> (rq-&gt;lab6_run_pool != <span class="literal">NULL</span>)</span><br><span class="line">     &#123;</span><br><span class="line">          <span class="class"><span class="keyword">struct</span> <span class="title">proc_struct</span>* <span class="title">proc</span> =</span> le2proc(rq-&gt;lab6_run_pool, lab6_run_pool);</span><br><span class="line">          proc-&gt;lab6_stride += (BIG_STRIDE / proc-&gt;lab6_priority);</span><br><span class="line">          <span class="keyword">return</span> proc;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 与 RR 所取操作相同。</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">stride_proc_tick</span><span class="params">(struct run_queue *rq, struct proc_struct *proc)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">if</span> (proc-&gt;time_slice &gt; <span class="number">0</span>) &#123;</span><br><span class="line">          proc-&gt;time_slice --;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">if</span> (proc-&gt;time_slice == <span class="number">0</span>) &#123;</span><br><span class="line">          proc-&gt;need_resched = <span class="number">1</span>;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置默认调度策略为 stride</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_class</span> <span class="title">default_sched_class</span> =</span> &#123;</span><br><span class="line">     .name = <span class="string">&quot;stride_scheduler&quot;</span>,</span><br><span class="line">     .init = stride_init,</span><br><span class="line">     .enqueue = stride_enqueue,</span><br><span class="line">     .dequeue = stride_dequeue,</span><br><span class="line">     .pick_next = stride_pick_next,</span><br><span class="line">     .proc_tick = stride_proc_tick,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>如何证明STRIDE_MAX – STRIDE_MIN &lt;= PASS_MAX？</p>
+<ul>
+<li>假如该命题不成立，则可以知道就绪队列在上一次找出用于执行的进程的时候，假如选择的进程是P，那么存在另外一个就绪的进程P’，并且有P’的stride比P严格地小（因为步进值最大为PASS_MAX，若该命题不成立，那么上一次调度时被选择执行并增加stride的进程一定不是stride最小的进程）。这也就说明上一次调度出了问题，这和stride算法的设计是相违背的；因此通过反证法证明了上述命题的成立；</li>
+</ul>
+<p>在 ucore 中，目前Stride是采用无符号的32位整数表示。则BigStride应该取多少，才能保证比较的正确性？</p>
+<ul>
+<li><p>开始有A=B,最大步进值S</p>
+</li>
+<li><p>B+S不溢出，则需A&lt;B+S，即0&lt;S,即S&lt;2^31</p>
+</li>
+<li><p>B+S溢出代表B+S &gt;= 2^32</p>
+<p>溢出后B’ = B+S-2^32</p>
+<p>此时为使 A-B’ &lt; 0,需要 A &gt;= B’+2^31</p>
+<p>即A &gt;= B+S-2^32+2^31=B+S-2^31</p>
+<p>又由A=B，有0&gt;=S-2^31，即S&lt;=2^31</p>
+</li>
+<li><p>综合有S&lt;2^31，即S&lt;=0x7FFFFFFF</p>
+</li>
+</ul>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://icbtbo.github.io/2021/09/02/os/lab6-%E8%B0%83%E5%BA%A6%E5%99%A8/">https://icbtbo.github.io/2021/09/02/os/lab6-%E8%B0%83%E5%BA%A6%E5%99%A8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://icbtbo.github.io" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></div><div class="post_share"><div class="social-share" data-image="/img/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/09/03/os/os%EF%BC%9A%E5%90%8C%E6%AD%A5%E4%BA%92%E6%96%A5/"><img class="prev-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">os：同步互斥</div></div></a></div><div class="next-post pull-right"><a href="/2021/09/01/os/os%EF%BC%9A%E5%A4%84%E7%90%86%E6%9C%BA%E8%B0%83%E5%BA%A6/"><img class="next-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">os：处理机调度</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/08/24/os/os：虚拟存储概念/" title="os:虚拟存储概念（四）"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-08-24</div><div class="title">os:虚拟存储概念（四）</div></div></a></div><div><a href="/2021/08/23/os/lab2-物理内存管理/" title="os_lab2:物理内存管理"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-08-23</div><div class="title">os_lab2:物理内存管理</div></div></a></div><div><a href="/2021/08/31/os/lab4-内核线程管理/" title="os_lab4:内核线程管理"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-08-31</div><div class="title">os_lab4:内核线程管理</div></div></a></div><div><a href="/2021/09/09/os/os：IO子系统/" title="os：IO子系统"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-09-09</div><div class="title">os：IO子系统</div></div></a></div><div><a href="/2021/09/04/os/os：信号量/" title="os：信号量"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-09-04</div><div class="title">os：信号量</div></div></a></div><div><a href="/2021/09/03/os/os：同步互斥/" title="os：同步互斥"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-09-03</div><div class="title">os：同步互斥</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">前置知识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%B9%E5%8A%A8%E7%82%B9"><span class="toc-number">2.</span> <span class="toc-text">改动点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%83%E4%B9%A0%E4%B8%80"><span class="toc-number">3.</span> <span class="toc-text">练习一</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%83%E4%B9%A0%E4%BA%8C"><span class="toc-number">4.</span> <span class="toc-text">练习二</span></a></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:独立功能的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现">Redis设计与实现:独立功能的实现</a><time datetime="2022-01-05T12:59:07.000Z" title="发表于 2022-01-05 20:59:07">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:多机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现">Redis设计与实现:多机数据库的实现</a><time datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:单机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现">Redis设计与实现:单机数据库的实现</a><time datetime="2022-01-04T06:38:05.000Z" title="发表于 2022-01-04 14:38:05">2022-01-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:数据结构与对象"/></a><div class="content"><a class="title" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象">Redis设计与实现:数据结构与对象</a><time datetime="2021-12-18T09:16:04.000Z" title="发表于 2021-12-18 17:16:04">2021-12-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kafka进阶篇：可靠性探究、应用、监控和高级应用"/></a><div class="content"><a class="title" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用">kafka进阶篇：可靠性探究、应用、监控和高级应用</a><time datetime="2021-11-25T01:59:17.000Z" title="发表于 2021-11-25 09:59:17">2021-11-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'pLWJLVgdxc6WLcEaFgEr2tQ2-gzGzoHsz',
+      appKey: 'OAmeyAUV6TdXoX5n1hSX4ELm',
+      placeholder: '请留下你的小脚印～',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      master: 'f94877d77182a6f9068fc12b5545e1f5',
+      tagMeta: ["博主","小伙伴","访客"],
+      friends: ["52dc4d80afb3aeab1d0deab1aa45a7b5","fd99ca470e7b5e8e2b4f76d6ed26d6cf"]
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/gh/HCLonely/Valine@latest/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

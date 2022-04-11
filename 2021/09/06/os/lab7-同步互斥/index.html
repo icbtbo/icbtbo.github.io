@@ -1,0 +1,325 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>os_lab7:同步互斥 | sjc的搬砖小屋</title><meta name="keywords" content="操作系统"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="课程主页：https:&#x2F;&#x2F;www.xuetangx.com&#x2F;course&#x2F;THU08091000267&#x2F;5883104?channel&#x3D;i.area.learn_title实验指导书：https:&#x2F;&#x2F;objectkuan.gitbooks.io&#x2F;ucore-docs&#x2F;content&#x2F;github：https:&#x2F;&#x2F;github.com&#x2F;chyyuu&#x2F;ucore_os_lab (master 分支)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="os_lab7:同步互斥">
+<meta property="og:url" content="https://icbtbo.github.io/2021/09/06/os/lab7-%E5%90%8C%E6%AD%A5%E4%BA%92%E6%96%A5/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="课程主页：https:&#x2F;&#x2F;www.xuetangx.com&#x2F;course&#x2F;THU08091000267&#x2F;5883104?channel&#x3D;i.area.learn_title实验指导书：https:&#x2F;&#x2F;objectkuan.gitbooks.io&#x2F;ucore-docs&#x2F;content&#x2F;github：https:&#x2F;&#x2F;github.com&#x2F;chyyuu&#x2F;ucore_os_lab (master 分支)">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://icbtbo.github.io/img/default_bg.png">
+<meta property="article:published_time" content="2021-09-06T08:06:58.000Z">
+<meta property="article:modified_time" content="2021-09-08T09:25:47.901Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="操作系统">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://icbtbo.github.io/img/default_bg.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="https://icbtbo.github.io/2021/09/06/os/lab7-%E5%90%8C%E6%AD%A5%E4%BA%92%E6%96%A5/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-09-08 17:25:47'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/default_bg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">os_lab7:同步互斥</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-09-06T08:06:58.000Z" title="发表于 2021-09-06 16:06:58">2021-09-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-09-08T09:25:47.901Z" title="更新于 2021-09-08 17:25:47">2021-09-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%B8%85%E5%8D%8Eos%E5%AE%9E%E9%AA%8C/">清华os实验</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>课程主页：<a target="_blank" rel="noopener" href="https://www.xuetangx.com/course/THU08091000267/5883104?channel=i.area.learn_title">https://www.xuetangx.com/course/THU08091000267/5883104?channel=i.area.learn_title</a><br>实验指导书：<a target="_blank" rel="noopener" href="https://objectkuan.gitbooks.io/ucore-docs/content/">https://objectkuan.gitbooks.io/ucore-docs/content/</a><br>github：<a target="_blank" rel="noopener" href="https://github.com/chyyuu/ucore_os_lab">https://github.com/chyyuu/ucore_os_lab</a> (master 分支)</p>
+</blockquote>
+<h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h2><p>临界区、信号量、条件变量、管程。</p>
+<h2 id="改动点"><a href="#改动点" class="headerlink" title="改动点"></a>改动点</h2><p>相比于 <code>lab6</code> 源代码，<code>lab7</code> 主要做了如下改动：</p>
+<ul>
+<li><code>sched.[ch]</code> 增加定时器机制，用以实现 <code>do_sleep()</code> 功能</li>
+<li><code>wait.[ch]</code> 实现基于链表形式的等待队列</li>
+<li><code>sem.[ch]</code> 实现信号量机制</li>
+<li><code>monitor.[ch]</code> 实现基于管程的条件变量机制</li>
+</ul>
+<h2 id="练习零"><a href="#练习零" class="headerlink" title="练习零"></a>练习零</h2><p>该练习用于了解定时器机制的实现流程。</p>
+<p>为实现此机制，首先需要使用相关数据结构以表示定时器：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 表示定时器结构</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> expires;       <span class="comment">// 定时器的到期时间 (实际实现中，各定时器按到期时间，由近至远串接至 	timer_list。为简化定时更新操作，该字段含义变更为：当前定时器距离前一个定时器的时间间隔)</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">proc_struct</span> *<span class="title">proc</span>;</span>   <span class="comment">// 该定时器所对应的进程</span></span><br><span class="line">    <span class="keyword">list_entry_t</span> timer_link;    <span class="comment">// 链接至 timer_list</span></span><br><span class="line">&#125; <span class="keyword">timer_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定时器链表首部，用以串接各定时任务</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">list_entry_t</span> timer_list;</span><br></pre></td></tr></table></figure>
+
+<p>各字段含义已经明确，<code>add_timer()/del_timer()</code> 的实现就比较简单，唯一需要注意的是：正确更新相关 <code>timer_t</code> 的 <code>expires</code> 字段。</p>
+<p>接下来，便是如何动态感知定时器是否到期，从而唤醒相关进程？</p>
+<p>对于操作系统而言，它借助于时钟中断以感知时间变化，因此当时钟中断发生时，它会调用特定函数 (<code>ucore</code> 中的 <code>run_time_list()</code> ) 以动态查询定时器链表中的定时器是否到期，若到期则执行相关唤醒操作，最后，动态更新当前进程的时间片信息，从而判断是否需要切换调度。</p>
+<blockquote>
+<p>简单提一下，用户进程如何使用定时器？</p>
+<p>简单流程：用户调用 <code>sleep(time)</code> –&gt; 中断触发 <code>sys_sleep()</code> –&gt; 间接调用 <code>do_sleep(time)</code> –&gt; <code>add_timer()</code>。</p>
+</blockquote>
+<h2 id="练习一"><a href="#练习一" class="headerlink" title="练习一"></a>练习一</h2><p>该练习用于了解信号量机制的实现流程。</p>
+<blockquote>
+<p>为实现互斥方法，总共存在三种方案：基于软件设计、基于硬件中断、基于硬件提供的原子操作。</p>
+<p>在 <code>ucore</code> 中，使用最简单的 “基于硬件中断” 实现信号量机制。</p>
+</blockquote>
+<p>先行给出信号量机制实现的形式化描述 (信号量实现基本与此相同)：</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210906162405.png" alt="img" style="zoom: 50%;" />
+
+<p>对于信号量而言，它使用如下数据结构进行表示：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 信号量</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> value; 					<span class="comment">// 共享资源的数目</span></span><br><span class="line">    <span class="keyword">wait_queue_t</span> wait_queue; 	<span class="comment">// 欲共享该资源的等待队列</span></span><br><span class="line">&#125; <span class="keyword">semaphore_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 等待队列</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="keyword">list_entry_t</span> wait_head; 	<span class="comment">// 链首</span></span><br><span class="line">&#125; <span class="keyword">wait_queue_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 等待队列中的元素</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">proc_struct</span> *<span class="title">proc</span>;</span> 	<span class="comment">// 所涉的进程</span></span><br><span class="line">    <span class="keyword">uint32_t</span> wakeup_flags;  	<span class="comment">// 该进程放置于等待队列中的原因 (例如：信号量的P操作、定时)</span></span><br><span class="line">    <span class="keyword">wait_queue_t</span> *wait_queue;	<span class="comment">// 所在的等待队列</span></span><br><span class="line">    <span class="keyword">list_entry_t</span> wait_link;		<span class="comment">// 链接至等待队列 wait_queue</span></span><br><span class="line">&#125; <span class="keyword">wait_t</span>;</span><br></pre></td></tr></table></figure>
+
+<p>信号量对应的 <code>P()/V()</code> 操作，具体见源代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// P 操作</span></span><br><span class="line"><span class="keyword">static</span> __noinline <span class="keyword">uint32_t</span> __down(<span class="keyword">semaphore_t</span> *sem, <span class="keyword">uint32_t</span> wait_state) &#123;</span><br><span class="line">    <span class="keyword">bool</span> intr_flag;</span><br><span class="line">    local_intr_save(intr_flag);</span><br><span class="line">    <span class="comment">// 如果仍存在资源可访问，则直接访问即可。</span></span><br><span class="line">    <span class="keyword">if</span> (sem-&gt;value &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        sem-&gt;value --;</span><br><span class="line">        local_intr_restore(intr_flag);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 表明已不存在资源可访问，则将当前进程放置于等待队列内部。</span></span><br><span class="line">    <span class="keyword">wait_t</span> __wait, *wait = &amp;__wait;</span><br><span class="line">    wait_current_set(&amp;(sem-&gt;wait_queue), wait, wait_state);</span><br><span class="line">    local_intr_restore(intr_flag);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 调度其他进程运行。</span></span><br><span class="line">    schedule();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 当前进程再次运行，则表明其已获取资源。</span></span><br><span class="line"></span><br><span class="line">  	<span class="comment">// 将当前进程从等待队列中移除</span></span><br><span class="line">		local_intr_save(intr_flag);</span><br><span class="line">    wait_current_del(&amp;(sem-&gt;wait_queue), wait);</span><br><span class="line">    local_intr_restore(intr_flag);</span><br><span class="line">		<span class="comment">// 判断 唤醒该进程的原因 和 当时让该进程等待的原因是否一致， 若不一致则返回 wait-&gt;wakeup_flags （造成等待的原因）</span></span><br><span class="line">    <span class="keyword">if</span> (wait-&gt;wakeup_flags != wait_state) &#123;</span><br><span class="line">        <span class="keyword">return</span> wait-&gt;wakeup_flags;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// V 操作</span></span><br><span class="line"><span class="keyword">static</span> __noinline <span class="keyword">void</span> __up(<span class="keyword">semaphore_t</span> *sem, <span class="keyword">uint32_t</span> wait_state) &#123;</span><br><span class="line">    <span class="keyword">bool</span> intr_flag;</span><br><span class="line">    <span class="comment">// local_intr_save 表示关中断，local_intr_restore 表示开中断。</span></span><br><span class="line">    <span class="comment">// 中断关闭，保证只有当前进程可以运行，从而保证这部分操作的原子性。</span></span><br><span class="line">    local_intr_save(intr_flag);</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">wait_t</span> *wait;</span><br><span class="line">        <span class="comment">// 如果等待队列内部不存在等待进程，则资源数量加一，否则选择一个等待进程调度即可。</span></span><br><span class="line">        <span class="keyword">if</span> ((wait = wait_queue_first(&amp;(sem-&gt;wait_queue))) == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            sem-&gt;value ++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            assert(wait-&gt;proc-&gt;wait_state == wait_state);</span><br><span class="line">            wakeup_wait(&amp;(sem-&gt;wait_queue), wait, wait_state, <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    local_intr_restore(intr_flag);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>虽然信号量形式化与具体实现并不相同，但是两者是等价的。</p>
+<p>两者的主要差别在于：在形式化中，<code>sem</code> 大于等于零时，表示共享资源的剩余数目，小于零时，表示正在等待资源的进程的数量；在具体实现中，<code>value</code> 仅表示共享资源的剩余数目，等待进程用等待队列来管理 (此时，因为共享资源的剩余数目只可能大于等于零，而不可能小于零，所以 <code>value</code>大于等于零)。</p>
+</blockquote>
+<blockquote>
+<p><strong>问答</strong></p>
+<p>如何为用户态进程提供信号量机制？</p>
+<p>肯定需要使用系统调用。</p>
+<p>当用户态进程使用创建信号量的系统调用时，OS 内部创建 <code>semaphore_t</code> 结构体，但是返回给用户态进程的标识则是另一个 (可能的情况，在 PCB （pcb 保存在内核空间）内部维护信号量数组，返回的是信号量在此数组的下标)。</p>
+<p>当用户态进程使用 <code>up/down</code> 的系统调用时，OS 从当前进程的 PCB 找到相应的 <code>semaphore_t</code> 结构体，然后执行相关操作即可。</p>
+</blockquote>
+<h2 id="练习二"><a href="#练习二" class="headerlink" title="练习二"></a>练习二</h2><p>该练习用于了解基于管程的条件变量机制的实现流程。</p>
+<blockquote>
+<p>信号量可以实现互斥访问，也可实现进程间同步。因为基于信号量的进程间同步比较麻烦，而且容易出错误，因此出现了 <strong>条件变量</strong> (注意：条件变量仍是以信号量为基础)。</p>
+<p>信号量和条件变量均是偏底层、用于互斥访问和进程间同步的方法，使用起来也是比较麻烦的。为进一步简化使用，更高层级的抽象形式 <strong>管程</strong> 便出现了。</p>
+</blockquote>
+<p>简而言之，<strong>管程</strong> 是一个黑盒，程序员往里扔的函数，它可确保在同一时刻，只有一个函数在执行 (亦因如此，确保其内部共享数据的互斥访问)。</p>
+<blockquote>
+<p>管程的实现方式分为多种，其主要区别在于：假定线程 A 因等待某条件而处于等待队列，线程 B 满足该条件后，线程 B 具有哪种行为？</p>
+<ul>
+<li><code>Mesa Semantics</code>：线程 B 执行 <code>cond_signal</code> ，因而线程 A 从等待队列移除，并放置于就绪队列，然后线程 B 继续执行。（java中使用这种）</li>
+<li><code>Hanson Semantics</code>：线程 B 执行完成并退出的同时，执行 <code>cond_signal</code>，因而线程 A 从等待队列移除，并放置于就绪队列。</li>
+<li><code>Hoare Semantics</code>：线程 B 执行 <code>cond_signal</code>，因而线程 A 从等待队列移除，并放置于就绪队列，然后立即阻塞线程 B，并等待线程 A 被执行。</li>
+</ul>
+<p>对于这三种方式，实际实现基于前两种 (因为可以减少一次上下文切换)，书本介绍基于后一种。（其中<code>Mesa Semantics</code>和<code>Hanson Semantics</code>类似，但<strong>前者是B线程先通知A线程，然后继续执行直到退出；而后者是B线程先退出，然后再通知A线程</strong>）</p>
+<p>在 <code>ucore</code> 中，管程即是基于后一种实现的，由于需要保证 <code>cond_signal</code> 执行的同时，阻塞当前线程，因此其实现有些麻烦。</p>
+<p>另外，管程属于更高层级的抽象形式，往往适用于 Java 等高级语言实现，这里实现一种基于 C 语言的、简化版的管程。</p>
+</blockquote>
+<p>管程基于信号量和条件变量而实现，信号量的实现前面已经谈及，在此给出<strong>条件变量实现</strong>的形式化描述 (条件变量实现基本与此大不相同)：</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210906213516.png" alt="img" style="zoom:50%;" />
+
+<blockquote>
+<p>根据此图，简单说明 <code>Mesa Semantics</code> 实现所存在的小缺陷。</p>
+<p>线程 B 执行 <code>cond_signal</code> 后，它只是将线程 A 放置于就绪队列，此时即便调度至线程 A，由于其需要再次获取 <code>lock</code>，而此时 <code>lock</code> 仍归线程 B 所有，因此线程 A 仍无法运行，只能等待线程 B 执行完成并释放 <code>lock</code>，然后才能执行线程 A (如果调度线程 A 前调度了其他进程进入管程，有可能使得线程 A 的条件再次无法满足。因此，当线程 A 执行时，其需要循环判断条件是否满足)。</p>
+</blockquote>
+<p>对于管程而言，它使用如下数据结构进行表示：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 条件变量</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">condvar</span>&#123;</span></span><br><span class="line">    <span class="keyword">semaphore_t</span> sem;        <span class="comment">// 借助于信号量，间接使用等待队列 (最初设置信号量为 0)。</span></span><br><span class="line">    <span class="keyword">int</span> count;              <span class="comment">// 在此条件变量上等待的进程数量</span></span><br><span class="line">    <span class="keyword">monitor_t</span> * owner;      <span class="comment">// 所属的管程</span></span><br><span class="line">&#125; <span class="keyword">condvar_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 管程</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">monitor</span>&#123;</span></span><br><span class="line">    <span class="keyword">semaphore_t</span> mutex;      <span class="comment">// 互斥访问管程内部的数据结构，初始化为 1。</span></span><br><span class="line">    <span class="comment">// next_count 指代由于发出 cond_signal 而睡眠的进程数量，next 只是用于构建一个发出 cond_signal 而睡眠的进程的等待队列。此二者是实现 Hoare Semantics 的关键。</span></span><br><span class="line">    <span class="keyword">semaphore_t</span> next;      </span><br><span class="line">    <span class="keyword">int</span> next_count;         </span><br><span class="line">    <span class="keyword">condvar_t</span> *cv;          <span class="comment">// 管程内部的条件变量列表</span></span><br><span class="line">&#125; <span class="keyword">monitor_t</span>;</span><br></pre></td></tr></table></figure>
+
+<p>首先给出初始化过程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">monitor_init</span> <span class="params">(<span class="keyword">monitor_t</span> * mtp, <span class="keyword">size_t</span> num_cv)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="comment">// 初始值 next_count 自然为 0。</span></span><br><span class="line">    mtp-&gt;next_count = <span class="number">0</span>;</span><br><span class="line">    mtp-&gt;cv = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="comment">// mutex 置 1，表示当前管程尚无进程访问，next 只是用于构建等待队列，因此置 0。</span></span><br><span class="line">    sem_init(&amp;(mtp-&gt;mutex), <span class="number">1</span>); </span><br><span class="line">    sem_init(&amp;(mtp-&gt;next), <span class="number">0</span>);</span><br><span class="line">    <span class="comment">// 为条件变量分配空间，并依据字段含义进行初始化。</span></span><br><span class="line">    mtp-&gt;cv =(<span class="keyword">condvar_t</span> *) kmalloc(<span class="keyword">sizeof</span>(<span class="keyword">condvar_t</span>)*num_cv);</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;num_cv; i++)&#123;</span><br><span class="line">        mtp-&gt;cv[i].count=<span class="number">0</span>;</span><br><span class="line">        sem_init(&amp;(mtp-&gt;cv[i].sem),<span class="number">0</span>);</span><br><span class="line">        mtp-&gt;cv[i].owner=mtp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来是条件变量的 <code>cond_wait()/cond_signal()</code>（Hoare Semantics），具体见源代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">cond_signal</span> <span class="params">(<span class="keyword">condvar_t</span> *cvp)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 如果当前条件变量上并不存在等待进程，则直接返回，否则执行如下操作。</span></span><br><span class="line">   <span class="keyword">if</span> (cvp-&gt;count &gt; <span class="number">0</span>) &#123;</span><br><span class="line">       <span class="keyword">monitor_t</span>* mon = cvp-&gt;owner;</span><br><span class="line">       mon-&gt;next_count++;</span><br><span class="line">       <span class="comment">// 唤醒当前条件变量所示等待队列上的一个。</span></span><br><span class="line">       up(&amp;(cvp-&gt;sem));</span><br><span class="line">       <span class="comment">// 将当前进程添加至 next 所示的等待队列上、使 next_count 加一，并选择调度其他进程。</span></span><br><span class="line">       down(&amp;(mon-&gt;next));</span><br><span class="line">       <span class="comment">// 再次执行时，当前进程唤醒，因而需要使next_count 减一。 </span></span><br><span class="line">       mon-&gt;next_count--;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">cond_wait</span> <span class="params">(<span class="keyword">condvar_t</span> *cvp)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 当前条件变量上等待进程数加一。</span></span><br><span class="line">    cvp-&gt;count++;</span><br><span class="line">    <span class="keyword">monitor_t</span>* mon = cvp-&gt;owner;</span><br><span class="line">    <span class="comment">// 如果 next 所示的等待队列上存在进程，则唤醒其中的一个，否则唤醒管程等待队列上的一个。</span></span><br><span class="line">    <span class="keyword">if</span> (mon-&gt;next_count &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        up(&amp;(mon-&gt;next));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        up(&amp;(mon-&gt;mutex));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 将当前进程添加至等待队列，并选择调度其他进程。</span></span><br><span class="line">    down(&amp;(cvp-&gt;sem));</span><br><span class="line">    <span class="comment">// 再次执行时，表明条件已经满足，当前条件变量上等待进程数减一。</span></span><br><span class="line">    cvp-&gt;count--;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>另外，当编写管程内部函数时，其格式如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">xxx</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    down(&amp;(mtp-&gt;mutex));</span><br><span class="line"></span><br><span class="line">    <span class="comment">//--------the real body of function--------------</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(mtp-&gt;next_count&gt;<span class="number">0</span>)</span><br><span class="line">        up(&amp;(mtp-&gt;next));</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        up(&amp;(mtp-&gt;mutex));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>似乎，高级语言内部实现管程是比较简单的。</p>
+<p>对于一个普通的类而言，隐式添加成员变量 <code>mutex</code>、在各方法前后隐式添加获取和释放 <code>mutex</code> 的代码、向 <code>cond_wait()</code> 传递 <code>mutex</code> 即可(条件变量的设置和使用需要由用户编写，因为这部分涉及具体逻辑)。</p>
+</blockquote>
+<p>鉴于条件变量的两个操作难于理解，在此以一个例子进行说明。</p>
+<p>所涉线程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">线程 A:							线程 B:</span><br><span class="line">	...								...</span><br><span class="line">	cond_wait();					cond_signal();</span><br><span class="line">	...								...</span><br></pre></td></tr></table></figure>
+
+<p>执行流程(可参考下方的流程图，请注意图中一些变量名和函数名和代码中不同，但概念一样)：</p>
+<ol>
+<li>线程 A 获取 <code>mutex</code>，从而开始执行。后续因等待某条件发生，因而执行 <code>cond_wait()</code>。</li>
+<li><code>cond_wait()</code> 执行后，将线程 A 添加至该条件变量对应的等待队列中，并调度其他线程执行 (因为目前 next 所示的等待队列为空，因而执行 <code>up(&amp;(mon-&gt;mutex))</code>，从而释放 <code>mutex</code>)。</li>
+<li>线程 B 获取 <code>mutex</code>，从而开始执行。后续满足某条件，因而执行 <code>cond_signal()</code>。</li>
+<li><code>cond_signal()</code> 执行后，唤醒该条件变量对应的等待队列上的一个线程，将当前线程添加至 <code>next</code> 所示的等待队列上，并调度其他线程执行。</li>
+<li>线程 A 继续执行其函数体，后续因为 <code>next_count &gt; 0</code> 唤醒 <code>next</code> 所示等待队列上的一个线程，然后完成执行。</li>
+<li>线程 B 继续执行其函数体，后续因为 <code>next_count = 0</code>，释放 <code>mutex</code>，然后完成执行。</li>
+</ol>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210906213731.png" alt="lab7_monitor" style="zoom:50%;" />
+
+<p>针对上述流程，需要留意几点：</p>
+<ol>
+<li>线程 A 再次获取执行权限时，其并没有获取锁 <code>mutex</code>，而是继续使用线程 B 所获取的锁 <code>mutex</code>。因为线程 B 已经睡眠，因此这里不会发生互斥访问 。</li>
+<li>线程 A 退出时，它所做的操作是唤醒线程 B，而非释放锁。释放锁的操作由最初获取锁的线程 B 自己释放。</li>
+</ol>
+<blockquote>
+<p>综合说明 <code>Hoare Semantics</code> 实现中保证互斥访问的机制：</p>
+<ol>
+<li>线程间如果不存在条件变量的羁绊，则其依靠 <code>mutex</code> 实现互斥访问。</li>
+<li>线程间如果存在条件变量的羁绊，执行 <code>cond_signal()</code> 的线程与执行 <code>cond_wait()</code> 的线程共享前者的锁，但是由于 <code>cond_signal()</code> 执行会阻塞一个、唤醒一个，故仍然保证互斥访问。</li>
+</ol>
+</blockquote>
+<p>用管程解决哲学家就餐问题：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">check_sync.c:</span><br><span class="line"><span class="comment">// 测试编号为i的哲学家是否能获得刀叉 如果能获得 则将状态改为正在吃 并且 尝试唤醒 因为wait操作睡眠的进程</span></span><br><span class="line"><span class="comment">// cond_signal 还会阻塞自己 等被唤醒的进程唤醒自己</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">phi_test_condvar</span> <span class="params">(i)</span> </span>&#123; </span><br><span class="line">    <span class="keyword">if</span>(state_condvar[i]==HUNGRY&amp;&amp;state_condvar[LEFT]!=EATING</span><br><span class="line">            &amp;&amp;state_condvar[RIGHT]!=EATING) &#123;</span><br><span class="line">        cprintf(<span class="string">&quot;phi_test_condvar: state_condvar[%d] will eating\n&quot;</span>,i);</span><br><span class="line">        state_condvar[i] = EATING ;</span><br><span class="line">        cprintf(<span class="string">&quot;phi_test_condvar: signal self_cv[%d] \n&quot;</span>,i);</span><br><span class="line">        cond_signal(&amp;mtp-&gt;cv[i]) ;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 拿刀叉</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">phi_take_forks_condvar</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">    down(&amp;(mtp-&gt;mutex));    <span class="comment">// P操作进入临界区</span></span><br><span class="line">    state_condvar[i] = HUNGRY; <span class="comment">// 饥饿状态 准备进食</span></span><br><span class="line">    phi_test_condvar(i); <span class="comment">// 测试当前是否能获得刀叉 </span></span><br><span class="line">    <span class="keyword">while</span> (state_condvar[i] != EATING) &#123;</span><br><span class="line">        cond_wait(&amp;mtp-&gt;cv[i]); <span class="comment">// 若不能拿 则阻塞自己 等其它进程唤醒</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(mtp-&gt;next_count&gt;<span class="number">0</span>)</span><br><span class="line">        up(&amp;(mtp-&gt;next));</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        up(&amp;(mtp-&gt;mutex));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 放刀叉</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">phi_put_forks_condvar</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">    down(&amp;(mtp-&gt;mutex)); <span class="comment">// P操作进入临界区</span></span><br><span class="line">    state_condvar[i] = THINKING; <span class="comment">// 思考状态</span></span><br><span class="line">    phi_test_condvar(LEFT); <span class="comment">// 试试左右两边能否获得刀叉</span></span><br><span class="line">    phi_test_condvar(RIGHT);</span><br><span class="line">    <span class="keyword">if</span>(mtp-&gt;next_count&gt;<span class="number">0</span>) <span class="comment">// 有哲学家睡在 signal操作 则将其唤醒</span></span><br><span class="line">        up(&amp;(mtp-&gt;next));</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        up(&amp;(mtp-&gt;mutex)); <span class="comment">// 离开临界区</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 主体函数，创建若干线程模拟哲学家就餐问题</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">philosopher_using_condvar</span><span class="params">(<span class="keyword">void</span> * arg)</span> </span>&#123; <span class="comment">/* arg is the No. of philosopher 0~N-1*/</span></span><br><span class="line">  </span><br><span class="line">    <span class="keyword">int</span> i, iter=<span class="number">0</span>;</span><br><span class="line">    i=(<span class="keyword">int</span>)arg;</span><br><span class="line">    cprintf(<span class="string">&quot;I am No.%d philosopher_condvar\n&quot;</span>,i);</span><br><span class="line">    <span class="keyword">while</span>(iter++&lt;TIMES)</span><br><span class="line">    &#123; <span class="comment">/* iterate*/</span></span><br><span class="line">        cprintf(<span class="string">&quot;Iter %d, No.%d philosopher_condvar is thinking\n&quot;</span>,iter,i); <span class="comment">/* thinking*/</span></span><br><span class="line">        do_sleep(SLEEP_TIME);</span><br><span class="line">        phi_take_forks_condvar(i); </span><br><span class="line">        <span class="comment">/* need two forks, maybe blocked */</span></span><br><span class="line">        cprintf(<span class="string">&quot;Iter %d, No.%d philosopher_condvar is eating\n&quot;</span>,iter,i); <span class="comment">/* eating*/</span></span><br><span class="line">        do_sleep(SLEEP_TIME);</span><br><span class="line">        phi_put_forks_condvar(i); </span><br><span class="line">        <span class="comment">/* return two forks back*/</span></span><br><span class="line">    &#125;</span><br><span class="line">    cprintf(<span class="string">&quot;No.%d philosopher_condvar quit\n&quot;</span>,i);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://icbtbo.github.io/2021/09/06/os/lab7-%E5%90%8C%E6%AD%A5%E4%BA%92%E6%96%A5/">https://icbtbo.github.io/2021/09/06/os/lab7-%E5%90%8C%E6%AD%A5%E4%BA%92%E6%96%A5/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://icbtbo.github.io" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></div><div class="post_share"><div class="social-share" data-image="/img/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/09/07/os/os%EF%BC%9A%E6%AD%BB%E9%94%81%E5%92%8C%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1/"><img class="prev-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">os：死锁和进程通信</div></div></a></div><div class="next-post pull-right"><a href="/2021/09/04/os/os%EF%BC%9A%E4%BF%A1%E5%8F%B7%E9%87%8F/"><img class="next-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">os：信号量</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/09/07/os/os：死锁和进程通信/" title="os：死锁和进程通信"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-09-07</div><div class="title">os：死锁和进程通信</div></div></a></div><div><a href="/2021/08/23/os/lab2-物理内存管理/" title="os_lab2:物理内存管理"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-08-23</div><div class="title">os_lab2:物理内存管理</div></div></a></div><div><a href="/2021/08/31/os/lab4-内核线程管理/" title="os_lab4:内核线程管理"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-08-31</div><div class="title">os_lab4:内核线程管理</div></div></a></div><div><a href="/2021/09/02/os/lab6-调度器/" title="os_lab6:调度器"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-09-02</div><div class="title">os_lab6:调度器</div></div></a></div><div><a href="/2021/09/09/os/os：IO子系统/" title="os：IO子系统"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-09-09</div><div class="title">os：IO子系统</div></div></a></div><div><a href="/2021/09/04/os/os：信号量/" title="os：信号量"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-09-04</div><div class="title">os：信号量</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">前置知识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%B9%E5%8A%A8%E7%82%B9"><span class="toc-number">2.</span> <span class="toc-text">改动点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%83%E4%B9%A0%E9%9B%B6"><span class="toc-number">3.</span> <span class="toc-text">练习零</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%83%E4%B9%A0%E4%B8%80"><span class="toc-number">4.</span> <span class="toc-text">练习一</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%83%E4%B9%A0%E4%BA%8C"><span class="toc-number">5.</span> <span class="toc-text">练习二</span></a></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:独立功能的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现">Redis设计与实现:独立功能的实现</a><time datetime="2022-01-05T12:59:07.000Z" title="发表于 2022-01-05 20:59:07">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:多机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现">Redis设计与实现:多机数据库的实现</a><time datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:单机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现">Redis设计与实现:单机数据库的实现</a><time datetime="2022-01-04T06:38:05.000Z" title="发表于 2022-01-04 14:38:05">2022-01-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:数据结构与对象"/></a><div class="content"><a class="title" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象">Redis设计与实现:数据结构与对象</a><time datetime="2021-12-18T09:16:04.000Z" title="发表于 2021-12-18 17:16:04">2021-12-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kafka进阶篇：可靠性探究、应用、监控和高级应用"/></a><div class="content"><a class="title" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用">kafka进阶篇：可靠性探究、应用、监控和高级应用</a><time datetime="2021-11-25T01:59:17.000Z" title="发表于 2021-11-25 09:59:17">2021-11-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'pLWJLVgdxc6WLcEaFgEr2tQ2-gzGzoHsz',
+      appKey: 'OAmeyAUV6TdXoX5n1hSX4ELm',
+      placeholder: '请留下你的小脚印～',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      master: 'f94877d77182a6f9068fc12b5545e1f5',
+      tagMeta: ["博主","小伙伴","访客"],
+      friends: ["52dc4d80afb3aeab1d0deab1aa45a7b5","fd99ca470e7b5e8e2b4f76d6ed26d6cf"]
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/gh/HCLonely/Valine@latest/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

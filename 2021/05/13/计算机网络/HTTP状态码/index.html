@@ -1,0 +1,415 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HTTP状态码 | sjc的搬砖小屋</title><meta name="keywords" content="HTTP"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="介绍了HTTP协议中的状态码（部分状态码介绍和别处不完全一样，可以对照着看）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP状态码">
+<meta property="og:url" content="https://icbtbo.github.io/2021/05/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/HTTP%E7%8A%B6%E6%80%81%E7%A0%81/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="介绍了HTTP协议中的状态码（部分状态码介绍和别处不完全一样，可以对照着看）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://icbtbo.github.io/img/default_bg.png">
+<meta property="article:published_time" content="2021-05-13T12:48:04.000Z">
+<meta property="article:modified_time" content="2021-05-13T13:00:49.958Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="HTTP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://icbtbo.github.io/img/default_bg.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="https://icbtbo.github.io/2021/05/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/HTTP%E7%8A%B6%E6%80%81%E7%A0%81/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-05-13 21:00:49'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/default_bg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">HTTP状态码</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-05-13T12:48:04.000Z" title="发表于 2021-05-13 20:48:04">2021-05-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-05-13T13:00:49.958Z" title="更新于 2021-05-13 21:00:49">2021-05-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="1、三至七种最基本的响应代码"><a href="#1、三至七种最基本的响应代码" class="headerlink" title="1、三至七种最基本的响应代码"></a>1、三至七种最基本的响应代码</h1><ul>
+<li>200(“OK”)<br>一切正常。实体主体中的文档（若存在的话）是某资源的表示。</li>
+<li>400(“Bad Request”)<br>客户端方面的问题。实体主题中的文档（若存在的话）是一个错误消息。希望客户端能够理解此错误消息，并改正问题。</li>
+<li>500(“Internal Server Error”)<br>服务期方面的问题。实体主体中的文档（如果存在的话）是一个错误消息。该错误消息通常无济于事，因为客户端无法修复服务器方面的问题。</li>
+<li>301(“Moved Permanently”)<br>当客户端触发的动作引起了资源URI的变化时发送此响应代码。另外，当客户端向一个资源的旧URI发送请求时，也发送此响应代码。</li>
+<li>404(“Not Found”) 和410(“Gone”)<br>当客户端所请求的URI不对应于任何资源时，发送此响应代码。404用于服务器端不知道客户端要请求哪个资源的情况；410用于服务器端知道客户端所请求的资源曾经存在，但现在已经不存在了的情况。</li>
+<li>409(“Conflict”)<br>当客户端试图执行一个”会导致一个或多个资源处于不一致状态“的操作时，发送此响应代码。</li>
+</ul>
+<p>SOAP Web服务只使用响应代码200(“OK”)和500(“Internal Server Error”)。无论是你发给SOAP服务器的数据有问题，还是服务器在处理数据的过程中出现问题，或者SOAP服务器出现内部问题，SOAP服务器均发送500(“Internal Server Error”)。客户端只有查看SOAP文档主体（body）（其中包含错误的描述）才能获知错误原因。客户端无法仅靠读取响应的前三个字节得知请求成功与否。</p>
+<h1 id="2、状态码系列。"><a href="#2、状态码系列。" class="headerlink" title="2、状态码系列。"></a>2、状态码系列。</h1><h2 id="1XX：通知"><a href="#1XX：通知" class="headerlink" title="1XX：通知"></a>1XX：通知</h2><p>1XX系列响应代码仅在与HTTP服务器沟通时使用。</p>
+<ul>
+<li>100(“Continue”)<br>重要程度：中等，但（写操作时）很少用。</li>
+</ul>
+<p>这是对HTTP LBYL（look-before-you-leap）请求的一个可能的响应。该响应代码表明：客户端应重新发送初始请求，并在请求中附上第一次请求时未提供的（可能很大或者包含敏感信息的）表示。客户端这次发送的请求不会被拒绝。对LBYL请求的另一个可能的响应是417(“Expectation Failed”)。</p>
+<p>请求报头：要做一个LBYL请求，客户端必须把Expect请求报头设为字符串”100-continue”。除此以外，客户端还需要设置其他一些报头，服务器将根据这些报头决定是响应100还是417。</p>
+<ul>
+<li>101(“Switching Protocols”)<br>重要程度：非常低。</li>
+</ul>
+<p>当客户端通过在请求里使用Upgrade报头，以通知服务器它想改用除HTTP协议之外的其他协议时，客户端将获得此响应代码。101响应代码表示“行，我现在改用另一个协议了”。通常HTTP客户端会在收到服务器发来的101响应后关闭与服务器的TCP连接。101响应代码意味着，该客户端不再是一个HTTP客户端，而将成为另一种客户端。<br>尽管可以通过Upgrade报头从HTTP切换到HTTPS，或者从HTTP1.1切换到某个未来的版本，但实际使用Upgrade报头的情况比较少。Upgrade报头也可用于HTTP切换到一个完全不同的协议（如IRC）上，但那需要在Web服务器切换为一个IRC服务器的同时，Web客户端切换为一个IRC的客户端，因为服务器将立刻在同一个TCP连接上开始使用新的协议。</p>
+<p>请求报头：客户端把Upgrade报头设置为一组希望使用的协议。<br>响应报头：如果服务器同意切换协议，它就返回一个Upgrade报头，说明它将切换到那个协议，并附上一个空白行。服务器不用关闭TCP链接，而是直接在该TCP连接上开始使用新的协议。</p>
+<h2 id="2XX-成功"><a href="#2XX-成功" class="headerlink" title="2XX: 成功"></a>2XX: 成功</h2><p>2XX系列响应代码表明操作成功了。</p>
+<ul>
+<li><strong>200(“OK”)</strong><br>重要程度：非常高。</li>
+</ul>
+<p>一般来说，这是客户端希望看到的响应代码。它表示服务器成功执行了客户端所请求的动作，并且在2XX系列里没有其他更适合的响应代码了。</p>
+<p>实体主体：对于GET请求，服务器应返回客户端所请求资源的一个表示。对于其他请求，服务器应返回当前所选资源的一个表示，或者刚刚执行的动作的一个描述。</p>
+<ul>
+<li><strong>201(“Created”)</strong><br>重要程度：高。</li>
+</ul>
+<p>当服务器依照客户端的请求创建了一个新资源时，发送此响应代码。</p>
+<p>响应报头：Location报头应包含指向新创建资源的规范URI。<br>实体主体：应该给出新创建资源的描述与链接。若已经在Location报头里给出了新资源的URI，那么可以用新资源的一个表示作为实体主体。</p>
+<ul>
+<li>202(“Accepted”)<br>重要程度：中等。</li>
+</ul>
+<p>客户端的请求无法或将不被实时处理。请求稍后会被处理。请求看上去是合法的，但在实际处理它时有出现问题的可能。<br>若一个请求触发了一个异步操作，或者一个需要现实世界参与的动作，或者一个需要很长时间才能完成且没必要让Web客户端一直等待的动作时，这个相应代码是一个合适的选择。</p>
+<p>响应报头：应该把未处理完的请求暴露为一个资源，以便客户端稍后查询其状态。Location报头可以包含指向该资源的URI。<br>实体主体：若无法让客户端稍后查询请求的状态，那么至少应该提供一个关于何时能处理该请求的估计。</p>
+<ul>
+<li>203(“Non-Authoritative Information”)<br>重要程度：非常低。</li>
+</ul>
+<p>这个响应代码跟200一样，只不过服务器想让客户端知道，有些响应报头并非来自该服务器–他们可能是从客户端先前发送的一个请求里复制的，或者从第三方得到的。</p>
+<p>响应报头：客户端应明白某些报头可能是不准确的，某些响应报头可能不是服务器自己生成的，所以服务器也不知道其含义。</p>
+<ul>
+<li><strong>204(“No Content”)</strong><br>重要程度：高。</li>
+</ul>
+<p>若服务器拒绝对PUT、POST或者DELETE请求返回任何状态信息或表示，那么通常采用此响应代码。服务器也可以对GET请求返回此响应代码，这表明“客户端请求的资源存在，但其表示是空的”。注意与304(“Not Modified”)的区别。204常常用在Ajax应用里。服务器通过这个响应代码告诉客户端：客户端的输入已被接受，但客户端不应该改变任何UI元素。</p>
+<p>实体主体：不允许。</p>
+<ul>
+<li>205(“Reset Content”)<br>重要程度：低。</li>
+</ul>
+<p>它与204类似，但与204不同的是，它表明客户端应重置数据源的视图或数据结构。假如你在浏览器里提交一个HTML表单，并得到响应代码204，那么表单里的各个字段值不变，可以继续修改它们；但假如得到的响应代码205，那么表单里的各个字段将被重置为它们的初始值。从数据录入方面讲：204适合对单条记录做一系列编辑，而205适于连续输入一组记录。</p>
+<ul>
+<li><strong>206(“Partial Content”)</strong><br>重要程度：对于支持部分GET（partial GET）的服务而言“非常高”，其他情况下“低”。</li>
+</ul>
+<p>它跟200类似，但它用于对部分GET请求（即使用Range请求报头的GET请求）的响应。部分GET请求常用于大型二进制文件的断点续传。</p>
+<p>请求报头：客户端为Range请求报头设置一个值。<br>响应报头：需要提供Date报头。ETag报头与Content-Location报头的值应该跟正常GET请求相同。</p>
+<p>若实体主体是单个字节范围（byte range），那么HTTP响应里必须包含一个Content-Range报头，以说明本响应返回的是表示的哪个部分，若实体主体是一个多部分实体（multipart entity）（即该实体主体由多个字节范围构成），那么每一个部分都要有自己的Content-Range报头。<br>实体主体：不是整个表示，而是一个或者多个字节范围。</p>
+<h2 id="3XX-重定向"><a href="#3XX-重定向" class="headerlink" title="3XX 重定向"></a>3XX 重定向</h2><p>3XX系列响应代码表明：客户端需要做些额外工作才能得到所需要的资源。它们通常用于GET请求。他们通常告诉客户端需要向另一个URI发送GET请求，才能得到所需的表示。那个URI就包含在Location响应报头里。</p>
+<ul>
+<li>300(“Multiple Choices”)<br>重要程度：低。</li>
+</ul>
+<p>若被请求的资源在服务器端存在多个表示，而服务器不知道客户端想要的是哪一个表示时，发送这个响应代码。或者当客户端没有使用Accept-*报头来指定一个表示，或者客户端所请求的表示不存在时，也发送这个响应代码。在这种情况下，一种选择是，服务器返回一个首选表示，并把响应代码设置为200，不过它也可以返回一个包含该资源各个表示的URI列表，并把响应代码设为300。</p>
+<p>响应报头：如果服务器有首选表示，那么它可以在Location响应报头中给出这个首选表示的URI。跟其他3XX响应代码一样，客户端可以自动跟随Location中的URI。<br>实体主体：一个包含该资源各个表示的URI的列表。可以在表示中提供一些信息，以便用户作出选择。</p>
+<ul>
+<li><strong>301(“Moved Permanently”)</strong><br>重要程度：中等。</li>
+</ul>
+<p>服务器知道客户端试图访问的是哪个资源，但它不喜欢客户端用当前URI来请求该资源。它希望客户端记住另一个URI，并在今后的请求中使用那个新的URI。你可以通过这个响应代码来防止由于URI变更而导致老URI失效。</p>
+<p>响应报头：服务器应当把规范URI放在Location响应报头里。<br>实体主体：服务器可以发送一个包含新URI的信息，不过这不是必需的。</p>
+<ul>
+<li><strong>302(“Found”)</strong><br>重要程度：应该了解，特别市编写客户端时。但我不推荐使用它。</li>
+</ul>
+<p>这个响应代码市造成大多数重定向方面的混乱的最根本原因。它应该是像307那样被处理。实际上，在HTTP 1.0中，响应代码302的名称是”Moved Temporarily”，不幸的是，在实际生活中，绝大多数客户端拿它像303一样处理。它的不同之处在于当服务器为客户端的PUT，POST或者DELETE请求返回302响应代码时，客户端要怎么做。<br>为了消除这一混淆，在HTTP 1.1中，该响应代码被重命名为”Found”，并新加了一个响应代码307。这个响应代码目前仍在广泛使用，但它的含义市混淆的，所以我建议你的服务发送307或者303，而不要发送302.除非你知道正在与一个不能理解303或307的HTTP 1.0客户端交互。</p>
+<p>响应报头：把客户端应重新请求的那个URI放在Location报头里。<br>实体主体：一个包含指向新URI的链接的超文本文档（就像301一样）。</p>
+<ul>
+<li><strong>303(“See Other”)</strong><br>重要程度：高。</li>
+</ul>
+<p>请求已经被处理，但服务器不是直接返回一个响应文档，而是返回一个响应文档的URI。该响应文档可能是一个静态的状态信息，也可能是一个更有趣的资源。对于后一种情况，303是一种令服务器可以“发送一个资源的表示，而不强迫客户端下载其所有数据”的方式。客户端可以向Location报头里的URI发送GET请求，但它不是必须这么做。<br>303响应代码是一种规范化资源URI的好办法。一个资源可以有多个URIs，但每个资源的规范URI只有一个，该资源的所有其他URIs都通过303指向该资源的规范URI，例如：303可以把一个对<a target="_blank" rel="noopener" href="http://www.example.com/software/current.tar.gz%E7%9A%84%E8%AF%B7%E6%B1%82%E9%87%8D%E5%AE%9A%E5%90%91%E5%88%B0http://www.example.com/software/1.0.2.tar.gz%E3%80%82">http://www.example.com/software/current.tar.gz的请求重定向到http://www.example.com/software/1.0.2.tar.gz。</a></p>
+<p>响应报头：Location报头里包含资源的URI。<br>实体主体：一个包含指向新URI的链接的超文本文档。</p>
+<ul>
+<li><strong>304(“Not Modified”)</strong><br>重要程度：高。</li>
+</ul>
+<p>这个响应代码跟204(“No Content”)类似：响应实体主体都必须为空。但204用于没有主体数据的情况，而304用于有主体数据，但客户端已拥有该数据，没必要重复发送的情况。这个响应代码可用于条件HTTP请求（conditional HTTP request).如果客户端在发送GET请求时附上了一个值为Sunday的If-Modified-Since报头，而客户端所请求的表示在服务器端自星期日（Sunday）以来一直没有改变过，那么服务器可以返回一个304响应。服务器也可以返回一个200响应，但由于客户端已拥有该表示，因此重复发送该表示只会白白浪费宽带。</p>
+<p>响应报头：需要提供Date报头。Etag与Content-Location报头的值，应该跟返回200响应时的一样。若Expires, Cache-Control及Vary报头的值自上次发送以来已经改变，那么就要提供这些报头。<br>实体主体：不允许。</p>
+<ul>
+<li>305(“Use Proxy”)<br>重要程度：低。</li>
+</ul>
+<p>这个响应代码用于告诉客户端它需要再发一次请求，但这次要通过一个HTTP代理发送，而不是直接发送给服务器。这个响应代码使用的不多，因为服务器很少在意客户端是否使用某一特定代理。这个代码主要用于基于代理的镜像站点。现在，镜像站点（如<a target="_blank" rel="noopener" href="http://www.example.com.mysite.com/%EF%BC%89%E5%8C%85%E5%90%AB%E8%B7%9F%E5%8E%9F%E5%A7%8B%E7%AB%99%E7%82%B9%EF%BC%88%E5%A6%82">http://www.example.com.mysite.com/）包含跟原始站点（如</a> <a target="_blank" rel="noopener" href="http://www.example.com/%EF%BC%89%E4%B8%80%E6%A0%B7%E7%9A%84%E5%86%85%E5%AE%B9%EF%BC%8C%E4%BD%86%E5%85%B7%E6%9C%89%E4%B8%8D%E5%90%8C%E7%9A%84URI%EF%BC%8C%E5%8E%9F%E5%A7%8B%E7%AB%99%E7%82%B9%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87307%E6%8A%8A%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%87%8D%E6%96%B0%E5%AE%9A%E5%90%91%E5%88%B0%E9%95%9C%E5%83%8F%E7%AB%99%E7%82%B9%E4%B8%8A%E3%80%82%E5%81%87%E5%A6%82%E6%9C%89%E5%9F%BA%E4%BA%8E%E4%BB%A3%E7%90%86%E7%9A%84%E9%95%9C%E5%83%8F%E7%AB%99%E7%82%B9%EF%BC%8C%E9%82%A3%E4%B9%88%E4%BD%A0%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87%E6%8A%8A">http://www.example.com/）一样的内容，但具有不同的URI，原始站点可以通过307把客户端重新定向到镜像站点上。假如有基于代理的镜像站点，那么你可以通过把</a> <a target="_blank" rel="noopener" href="http://proxy.mysite.com/%E8%AE%BE%E4%B8%BA%E4%BB%A3%E7%90%86%EF%BC%8C%E4%BD%BF%E7%94%A8%E8%B7%9F%E5%8E%9F%E5%A7%8BURI%EF%BC%88http://www.example.com/%EF%BC%89%E4%B8%80%E6%A0%B7%E7%9A%84URI%E6%9D%A5%E8%AE%BF%E9%97%AE%E9%95%9C%E5%83%8F%E7%AB%99%E7%82%B9%E3%80%82%E8%BF%99%E9%87%8C%EF%BC%8C%E5%8E%9F%E5%A7%8B%E7%AB%99%E7%82%B9example.com%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87305%E6%8A%8A%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%B7%AF%E7%94%B1%E5%88%B0%E4%B8%80%E4%B8%AA%E5%9C%B0%E7%90%86%E4%B8%8A%E6%8E%A5%E8%BF%91%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E9%95%9C%E5%83%8F%E4%BB%A3%E7%90%86%E3%80%82web%E6%B5%8F%E8%A7%88%E5%99%A8%E4%B8%80%E8%88%AC%E4%B8%8D%E8%83%BD%E6%AD%A3%E7%A1%AE%E5%A4%84%E7%90%86%E8%BF%99%E4%B8%AA%E5%93%8D%E5%BA%94%E4%BB%A3%E7%A0%81%EF%BC%8C%E8%BF%99%E6%98%AF%E5%AF%BC%E8%87%B4305%E5%93%8D%E5%BA%94%E4%BB%A3%E7%A0%81%E7%94%A8%E7%9A%84%E4%B8%8D%E5%A4%9A%E7%9A%84%E5%8F%A6%E4%B8%80%E4%B8%AA%E5%8E%9F%E5%9B%A0%E3%80%82">http://proxy.mysite.com/设为代理，使用跟原始URI（http://www.example.com/）一样的URI来访问镜像站点。这里，原始站点example.com可以通过305把客户端路由到一个地理上接近客户端的镜像代理。web浏览器一般不能正确处理这个响应代码，这是导致305响应代码用的不多的另一个原因。</a></p>
+<p>响应报头：Location报头里包含代理的URI。</p>
+<ul>
+<li>306 未使用<br>重要程度：无</li>
+</ul>
+<p>306 响应代码没有在HTTP标准中定义过。</p>
+<ul>
+<li><strong>307(“Temporary Redirect”)</strong><br>重要程度：高。</li>
+</ul>
+<p>请求还没有被处理，因为所请求的资源不在本地：它在另一个URI处。客户端应该向那个URI重新发送请求。就GET请求来说，它只是请求得到一个表示，该响应代码跟303没有区别。当服务器希望把客户端重新定向到一个镜像站点时，可以用307来响应GET请求。但对于POST，PUT及DELETE请求，它们希望服务器执行一些操作，307和303有显著区别。对POST，PUT或者DELETE请求响应303表明：操作已经成功执行，但响应实体将不随本响应一起返回，若客户端想要获取响应实体主体，它需要向另一个URI发送GET请求。而307表明：服务器尚未执行操作，客户端需要向Location报头里的那个URI重新提交整个请求。</p>
+<p>响应报头： 把客户端应重新请求的那个URI放在Location报头里。<br>实体主体：一个包含指向新URI的链接的超文本文档。</p>
+<h2 id="4XX：客户端错误"><a href="#4XX：客户端错误" class="headerlink" title="4XX：客户端错误"></a>4XX：客户端错误</h2><p>这些响应代码表明客户端出现错误。不是认证信息有问题，就是表示格式或HTTP库本身有问题。客户端需要自行改正。</p>
+<ul>
+<li><strong>400(“Bad Request”)</strong><br>重要程度：高。</li>
+</ul>
+<p>这是一个通用的客户端错误状态，当其他4XX响应代码不适用时，就采用400。此响应代码通常用于“服务器收到客户端通过PUT或者POST请求提交的表示，表示的格式正确，但服务器不懂它什么意思”的情况。</p>
+<p>实体主体：可以包含一个错误的描述文档。</p>
+<ul>
+<li><strong>401(“Unauthorized”)</strong><br>重要程度：高。</li>
+</ul>
+<p>客户端试图对一个受保护的资源进行操作，却又没有提供正确的认证证书。客户端提供了错误的证书，或者根本没有提供证书。这里的证书（credential）可以是一个用户名/密码，也可以市一个API key，或者一个认证令牌。客户端常常通过向一个URI发送请求，并查看收到401响应，以获知应该发送哪种证书，以及证书的格式。如果服务器不想让未授权的用户获知某个资源的存在，那么它可以谎报一个404而不是401。这样做的缺点是：客户端需要事先知道服务器接受哪种认证–这将导致HTTP摘要认证无法工作。</p>
+<p>响应报头：WWW-Authenticate报头描述服务器将接受哪种认证。<br>实体主体：一个错误的描述文档。假如最终用户可通过“在网站上注册”的方式得到证书，那么应提供一个指向该注册页面的链接。</p>
+<ul>
+<li>402(“Payment Required”)<br>重要程度：无。</li>
+</ul>
+<p>除了它的名字外，HTTP标准没有对该响应的其他方面作任何定义。因为目前还没有用于HTTP的微支付系统，所以它被留作将来使用。尽管如此，若存在一个用于HTTP的微支付系统，那么这些系统将首先出现在web服务领域。如果想按请求向用户收费，而且你与用户之间的关系允许这么做的话，那么或许用得上这个响应代码。<br>注：该书印于2008年</p>
+<ul>
+<li><strong>403(“Forbidden”)</strong><br>重要程度：中等。</li>
+</ul>
+<p>客户端请求的结构正确，但是服务器不想处理它。这跟证书不正确的情况不同–若证书不正确，应该发送响应代码401。该响应代码常用于一个资源只允许在特定时间段内访问，<br>或者允许特定IP地址的用户访问的情况。403暗示了所请求的资源确实存在。跟401一样，若服务器不想透露此信息，它可以谎报一个404。既然客户端请求的结构正确，那为什么还要把本响应代码放在4XX系列（客户端错误），而不是5XX系列（服务端错误）呢？因为服务器不是根据请求的结构，而是根据请求的其他方面（比如说发出请求的时间）作出的决定的。</p>
+<p>实体主体：一个描述拒绝原因的文档（可选）。</p>
+<ul>
+<li><strong>404(“Not Found”)</strong><br>重要程度：高。</li>
+</ul>
+<p>这也许是最广为人知的HTTP响应代码了。404表明服务器无法把客户端请求的URI转换为一个资源。相比之下，410更有用一些。web服务可以通过404响应告诉客户端所请求的URI是空的，然后客户端就可以通过向该URI发送PUT请求来创建一个新资源了。但是404也有可能是用来掩饰403或者401.</p>
+<ul>
+<li>405(“Method Not Allowd”)<br>重要程度：中等。</li>
+</ul>
+<p>客户端试图使用一个本资源不支持的HTTP方法。例如：一个资源只支持GET方法，但是客户端使用PUT方法访问。</p>
+<p>响应报头：Allow报头列出本资源支持哪些HTTP方法，例如：Allow：GET，POST</p>
+<ul>
+<li>406(“Not Acceptable”)<br>重要程度：中等。</li>
+</ul>
+<p>当客户端对表示有太多要求，以至于服务器无法提供满足要求的表示，服务器可以发送这个响应代码。例如：客户端通过Accept头指定媒体类型为application/json+hic，但是服务器只支持application/json。服务器的另一个选择是：忽略客户端挑剔的要求，返回首选表示，并把响应代码设为200。</p>
+<p>实体主体：一个可选表示的链接列表。</p>
+<ul>
+<li>407(“Proxy Authentication Required”)<br>重要程度：低。</li>
+</ul>
+<p>只有HTTP代理会发送这个响应代码。它跟401类似，唯一区别在于：这里不是无权访问web服务，而是无权访问代理。跟401一样，可能是因为客户端没有提供证书，也可能是客户端提供的证书不正确或不充分。</p>
+<p>请求报头：客户端通过使用Proxy-Authorization报头（而不是Authorization）把证书提供给代理。格式跟Authrization一样。<br>响应报头：代理通过Proxy-Authenticate报头（而不是WWW-Authenticate）告诉客户端它接受哪种认证。格式跟WWW-Authenticate一样。</p>
+<ul>
+<li>408(“Reqeust Timeout”)<br>重要程度：低。</li>
+</ul>
+<p>假如HTTP客户端与服务器建立链接后，却不发送任何请求（或从不发送表明请求结束的空白行），那么服务器最终应该发送一个408响应代码，并关闭此连接。</p>
+<ul>
+<li><strong>409(“Conflict”)</strong><br>重要程度：高。</li>
+</ul>
+<p>此响应代码表明：你请求的操作会导致服务器的资源处于一种不可能或不一致的状态。例如你试图修改某个用户的用户名，而修改后的用户名与其他存在的用户名冲突了。</p>
+<p>响应报头：若冲突是因为某个其他资源的存在而引起的，那么应该在Location报头里给出那个资源的URI。<br>实体主体：一个描述冲突的文档，以便客户端可以解决冲突。</p>
+<ul>
+<li>410(“Gone”)<br>重要程度：中等。</li>
+</ul>
+<p>这个响应代码跟404类似，但它提供的有用信息更多一些。这个响应代码用于服务器知道被请求的URI过去曾指向一个资源，但该资源现在不存在了的情况。服务器不知道<br>该资源的新URI，服务器要是知道该URI的话，它就发送响应代码301.410和310一样，都有暗示客户端不应该再请求该URI的意思，不同之处在于：410只是指出该资源不存在，但没有给出该资源的新URI。RFC2616建议“为短期的推广服务，以及属于个人但不继续在服务端运行的资源”采用410.</p>
+<ul>
+<li>411(“Length Required”)<br>重要程度：低到中等。</li>
+</ul>
+<p>若HTTP请求包含表示，它应该把Content-Length请求报头的值设为该表示的长度（以字节为单位）。对客户端而言，有时这不太方便（例如，当表示是来自其他来源的字节流时）。<br>所以HTTP并不要求客户端在每个请求中都提供Content-Length报头。但HTTP服务器可以要求客户端必须设置该报头。服务器可以中断任何没有提供Content-Length报头的请求，并要求客户端重新提交包含Content-Length报头的请求。这个响应代码就是用于中断未提供Content-Lenght报头的请求的。假如客户端提供错误的长度，或发送超过长度的表示，服务器可以中断请求并关闭链接，并返回响应代码413。</p>
+<ul>
+<li>412(“Precondition Failed”)<br>重要程度：中等。</li>
+</ul>
+<p>客户端在请求报头里指定一些前提条件，并要求服务器只有在满足一定条件的情况下才能处理本请求。若服务器不满足这些条件，就返回此响应代码。If-Unmodified-Since是一个常见的前提条件。客户端可以通过PUT请求来修改一个资源，但它要求，仅在自客户端最后一次获取该资源后该资源未被别人修改过才能执行修改操作。若没有这一前提条件，客户端可能会无意识地覆盖别人做的修改，或者导致409的产生。</p>
+<p>请求报头：若客户但设置了If-Match，If-None-Match或If-Unmodified-Since报头，那就有可能得到这个响应代码。If-None-Match稍微特别一些。若客户端在发送GET或HEAD请求时指定了If-None-Match，并且服务器不满足该前提条件的话，那么响应代码不是412而是304，这是实现条件HTTP GET的基础。若客户端在发送PUT，POST或DELETE请求时指定了If-None-Match,并且服务器不满足该前提条件的话，那么响应代码是412.另外，若客户端指定了If-Match或If-Unmodified-Since(无论采用什么HTTP方法)，而服务器不满足该前提条件的话，响应代码也是412。</p>
+<ul>
+<li>413(“Request Entity Too Large”)<br>重要程度：低到中等。</li>
+</ul>
+<p>这个响应代码跟411类似，服务器可以用它来中断客户端的请求并关闭连接，而不需要等待请求完成。411用于客户端未指定长度的情况，而413用于客户端发送的表示太大，以至于服务器无法处理。客户端可以先做一个LBYL（look-before-you-leap）请求，以免请求被413中断。若LBYL请求获得响应代码为100，客户端再提交完整的表示。</p>
+<p>响应报头：如果因为服务器方面临时遇到问题（比如资源不足），而不是因为客户端方面的问题而导致中断请求的话，服务器可以把Retry-After报头的值设为一个日期或一个间隔时间，以秒为单位，以便客户端可以过段时间重试。</p>
+<ul>
+<li>414(“Request-URI Too Long”)<br>重要程度：低。</li>
+</ul>
+<p>HTTP标准并没有对URI长度作出官方限制，但大部分现有的web服务器都对URI长度有一个上限，而web服务可能也一样。导致URI超长的最常见的原因是：表示数据明明是该放在实体主体里的，但客户端却把它放在了URI里。深度嵌套的数据结构也有可能引起URI过长。</p>
+<ul>
+<li>415(“Unsupported Media Type”)<br>重要程度：中等。</li>
+</ul>
+<p>当客户端在发送表示时采用了一种服务器无法理解的媒体类型，服务器发送此响应代码。比如说，服务器期望的是XML格式，而客户端发送的确实JSON格式。<br>如果客户端采用的媒体类型正确，但格式有问题，这时最好返回更通用的400。</p>
+<ul>
+<li>416(“Requestd Range Not Satisfiable”)<br>重要程度：低。</li>
+</ul>
+<p>当客户端所请求的字节范围超出表示的实际大小时，服务器发送此响应代码。例如：你请求一个表示的1-100字节，但该表示总共只用99字节大小。</p>
+<p>请求报头：仅当原始请求里包含Range报头时，才有可能收到此响应代码。若原始请求提供的是If-Range报头，则不会收到此响应代码。<br>响应报头：服务器应当通过Content-Range报头告诉客户端表示的实际大小。</p>
+<ul>
+<li>417(“Expectation Failed”)<br>重要程度：中等。</li>
+</ul>
+<p>此响应代码跟100正好相反。当你用LBYL请求来考察服务器是否会接受你的表示时，如果服务器确认会接受你的表示，那么你将获得响应代码100，否则你将获得417。</p>
+<h2 id="5XX-服务端错误"><a href="#5XX-服务端错误" class="headerlink" title="5XX 服务端错误"></a>5XX 服务端错误</h2><p>这些响应代码表明服务器端出现错误。一般来说，这些代码意味着服务器处于不能执行客户端请求的状态，此时客户端应稍后重试。有时，服务器能够估计客户端应在多久之后重试。并把该信息放在Retry-After响应报头里。</p>
+<p>5XX系列响应代码在数量上不如4XX系列多，这不是因为服务器错误的几率小，而是因为没有必要如此详细–对于服务器方面的问题，客户端是无能为力的。</p>
+<ul>
+<li><strong>500(“Internal Server Error”)</strong><br>重要程度：高。</li>
+</ul>
+<p>这是一个通用的服务器错误响应。对于大多数web框架，如果在执行请求处理代码时遇到了异常，它们就发送此响应代码。</p>
+<ul>
+<li>501(“Not Implemented”)<br>重要程度：低。</li>
+</ul>
+<p>客户端试图使用一个服务器不支持的HTTP特性。<br>最常见的例子是：客户端试图做一个采用了拓展HTTP方法的请求，而普通web服务器不支持此请求。它跟响应代码405比较相似，405表明客户端所用的方法是一个可识别的方法，但该资源不支持，而501表明服务器根本不能识别该方法。</p>
+<ul>
+<li>502(“Bad Gateway”)<br>重要程度：低。</li>
+</ul>
+<p>只有HTTP代理会发送这个响应代码。它表明代理方面出现问题，或者代理与上行服务器之间出现问题，而不是上行服务器本身有问题。若代理根本无法访问上行服务器，响应代码将是504。</p>
+<ul>
+<li><strong>503(“Service Unavailable”)</strong><br>重要程度：中等到高。</li>
+</ul>
+<p>此响应代码表明HTTP服务器正常，只是下层web服务服务不能正常工作。最可能的原因是资源不足：服务器突然收到太多请求，以至于无法全部处理。由于此问题多半由客户端反复发送请求造成，因此HTTP服务器可以选择拒绝接受客户端请求而不是接受它，并发送503响应代码。</p>
+<p>响应报头：服务器可以通过Retry-After报头告知客户端何时可以重试。</p>
+<ul>
+<li>504(“Gateway Timeout”)<br>重要程度：低。</li>
+</ul>
+<p>跟502类似，只有HTTP代理会发送此响应代码。此响应代码表明代理无法连接上行服务器。</p>
+<ul>
+<li>505(“HTTP Version Not Supported”)<br>重要程度： 非常低。</li>
+</ul>
+<p>当服务器不支持客户端试图使用的HTTP版本时发送此响应代码。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://icbtbo.github.io/2021/05/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/HTTP%E7%8A%B6%E6%80%81%E7%A0%81/">https://icbtbo.github.io/2021/05/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/HTTP%E7%8A%B6%E6%80%81%E7%A0%81/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://icbtbo.github.io" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/HTTP/">HTTP</a></div><div class="post_share"><div class="social-share" data-image="/img/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/05/15/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/HTTPS%E5%AE%89%E5%85%A8%E8%AE%A4%E8%AF%81%E6%B5%81%E7%A8%8B/"><img class="prev-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">HTTPS安全认证流程</div></div></a></div><div class="next-post pull-right"><a href="/2021/05/13/Maven/Maven%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/"><img class="next-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Maven生命周期</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/05/15/计算机网络/HTTPS安全认证流程/" title="HTTPS安全认证流程"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-05-15</div><div class="title">HTTPS安全认证流程</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1%E3%80%81%E4%B8%89%E8%87%B3%E4%B8%83%E7%A7%8D%E6%9C%80%E5%9F%BA%E6%9C%AC%E7%9A%84%E5%93%8D%E5%BA%94%E4%BB%A3%E7%A0%81"><span class="toc-number">1.</span> <span class="toc-text">1、三至七种最基本的响应代码</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2%E3%80%81%E7%8A%B6%E6%80%81%E7%A0%81%E7%B3%BB%E5%88%97%E3%80%82"><span class="toc-number">2.</span> <span class="toc-text">2、状态码系列。</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1XX%EF%BC%9A%E9%80%9A%E7%9F%A5"><span class="toc-number">2.1.</span> <span class="toc-text">1XX：通知</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2XX-%E6%88%90%E5%8A%9F"><span class="toc-number">2.2.</span> <span class="toc-text">2XX: 成功</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3XX-%E9%87%8D%E5%AE%9A%E5%90%91"><span class="toc-number">2.3.</span> <span class="toc-text">3XX 重定向</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4XX%EF%BC%9A%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%94%99%E8%AF%AF"><span class="toc-number">2.4.</span> <span class="toc-text">4XX：客户端错误</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5XX-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%94%99%E8%AF%AF"><span class="toc-number">2.5.</span> <span class="toc-text">5XX 服务端错误</span></a></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:独立功能的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现">Redis设计与实现:独立功能的实现</a><time datetime="2022-01-05T12:59:07.000Z" title="发表于 2022-01-05 20:59:07">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:多机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现">Redis设计与实现:多机数据库的实现</a><time datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:单机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现">Redis设计与实现:单机数据库的实现</a><time datetime="2022-01-04T06:38:05.000Z" title="发表于 2022-01-04 14:38:05">2022-01-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:数据结构与对象"/></a><div class="content"><a class="title" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象">Redis设计与实现:数据结构与对象</a><time datetime="2021-12-18T09:16:04.000Z" title="发表于 2021-12-18 17:16:04">2021-12-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kafka进阶篇：可靠性探究、应用、监控和高级应用"/></a><div class="content"><a class="title" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用">kafka进阶篇：可靠性探究、应用、监控和高级应用</a><time datetime="2021-11-25T01:59:17.000Z" title="发表于 2021-11-25 09:59:17">2021-11-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'pLWJLVgdxc6WLcEaFgEr2tQ2-gzGzoHsz',
+      appKey: 'OAmeyAUV6TdXoX5n1hSX4ELm',
+      placeholder: '请留下你的小脚印～',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      master: 'f94877d77182a6f9068fc12b5545e1f5',
+      tagMeta: ["博主","小伙伴","访客"],
+      friends: ["52dc4d80afb3aeab1d0deab1aa45a7b5","fd99ca470e7b5e8e2b4f76d6ed26d6cf"]
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/gh/HCLonely/Valine@latest/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

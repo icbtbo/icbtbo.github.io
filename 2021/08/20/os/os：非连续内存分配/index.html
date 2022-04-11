@@ -1,0 +1,361 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>os：非连续内存分配（三） | sjc的搬砖小屋</title><meta name="keywords" content="操作系统"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="非连续内存分配的背景与需求之前已经讲到操作系统的连续内存分配，但比如在WFA（worst-fit allocation，先拆最大块方法）中，随着分配的进行，较大的内存申请很可能将不再能一次满足。所以我们思考有没有一种方法将较为离散的内存块组织起来，组织成逻辑上的相对大块的内存。借用段式存储管理中的这张图，我们将这个过程示意如下：   另外，连续内存的申请和释放都伴随着一些麻烦，同时还不免地产生内外">
+<meta property="og:type" content="article">
+<meta property="og:title" content="os：非连续内存分配（三）">
+<meta property="og:url" content="https://icbtbo.github.io/2021/08/20/os/os%EF%BC%9A%E9%9D%9E%E8%BF%9E%E7%BB%AD%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="非连续内存分配的背景与需求之前已经讲到操作系统的连续内存分配，但比如在WFA（worst-fit allocation，先拆最大块方法）中，随着分配的进行，较大的内存申请很可能将不再能一次满足。所以我们思考有没有一种方法将较为离散的内存块组织起来，组织成逻辑上的相对大块的内存。借用段式存储管理中的这张图，我们将这个过程示意如下：   另外，连续内存的申请和释放都伴随着一些麻烦，同时还不免地产生内外">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://icbtbo.github.io/img/default_bg.png">
+<meta property="article:published_time" content="2021-08-20T13:21:23.000Z">
+<meta property="article:modified_time" content="2021-08-24T04:03:09.522Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="操作系统">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://icbtbo.github.io/img/default_bg.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="https://icbtbo.github.io/2021/08/20/os/os%EF%BC%9A%E9%9D%9E%E8%BF%9E%E7%BB%AD%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-08-24 12:03:09'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/default_bg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">os：非连续内存分配（三）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-08-20T13:21:23.000Z" title="发表于 2021-08-20 21:21:23">2021-08-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-08-24T04:03:09.522Z" title="更新于 2021-08-24 12:03:09">2021-08-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%B8%85%E5%8D%8Eos%E8%AF%BE%E7%A8%8B/">清华os课程</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="非连续内存分配的背景与需求"><a href="#非连续内存分配的背景与需求" class="headerlink" title="非连续内存分配的背景与需求"></a>非连续内存分配的背景与需求</h2><p>之前已经讲到操作系统的连续内存分配，但比如在WFA（worst-fit allocation，先拆最大块方法）中，随着分配的进行，较大的内存申请很可能将不再能一次满足。所以我们思考有没有一种方法将较为离散的内存块组织起来，组织成逻辑上的相对大块的内存。借用段式存储管理中的这张图，我们将这个过程示意如下：</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210816205535.jpg" alt="img" style="zoom:67%;" />
+
+<p>另外，连续内存的申请和释放都伴随着一些麻烦，同时还不免地产生内外碎片。</p>
+<p>非连续分配的提出就是为了<strong>提高内存的利用率和管理的灵活性</strong>。</p>
+<ul>
+<li>允许程序使用非连续的物理地址空间</li>
+<li>允许共享代码和数据</li>
+<li>支持动态加载和动态链接</li>
+</ul>
+<p>非连续分配的实现过程中需要解决的问题： <strong>实现虚拟地址和物理地址的转换</strong></p>
+<ul>
+<li>软件实现：利用类似外排序的思路，灵活地组织处在<strong>不同区域</strong>的内存，但是开销大；</li>
+<li>硬件实现：每执行一条指令都需要做转换，那么直接使用硬件做映射是比较好的。</li>
+</ul>
+<p>非连续分配硬件辅助机制：如何选择非连续分配中的内存分块大小（拆多大？如何组织？）</p>
+<ul>
+<li>段式存储管理（segmentation）</li>
+<li>页式存储管理（paging）</li>
+</ul>
+<blockquote>
+<p>访问不在当前段的地址的错误就叫<a href="https://link.zhihu.com/?target=https://www.cnblogs.com/wpgraceii/p/10622582.html">段错误</a>（segmentation fault），这在初学算法题时十分常见。当一个程序找不到某个地址时，它会认为你所需要的地址在其他段上，而不是说它不存在。</p>
+</blockquote>
+<h2 id="段式存储管理"><a href="#段式存储管理" class="headerlink" title="段式存储管理"></a>段式存储管理</h2><h3 id="段式存储管理概念"><a href="#段式存储管理概念" class="headerlink" title="段式存储管理概念"></a>段式存储管理概念</h3><p>段表示访问方式和存储数据等属性相同的一段地址空间，对应一个连续的内存“块”，由若干个“段”组成进程逻辑地址空间。</p>
+<p>进程的地址空间由多个功能不同的段构成：主代码段，子模块代码段、公用库代码段、stack、heap、初始化数据段、符号表等。</p>
+<p>将各个功能区隔离开之后，段式存储就实现了更细粒度的灵活的分离与共享。段式存储在做内存保护方面有优势。</p>
+<blockquote>
+<p>各个部分内部连续，但之间相对去耦合，从而实现（这里是相对底层的）复用。这和高级语言编程中加入函数和模块的考量是一致的。</p>
+</blockquote>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210816210242.png" alt="image-20210816210242325" style="zoom:40%;" />
+
+<h3 id="段式存储的访问"><a href="#段式存储的访问" class="headerlink" title="段式存储的访问"></a>段式存储的访问</h3><p>利用基址+长度这种描述方法访问段的地址。思路如下：</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210816210631.png" alt="image-20210816210631419" style="zoom:50%;" />
+
+<p>段的地址可以用一个二元数来表示，其中一个是<strong>基址</strong>，原理上基址加指定的偏移，就可以完成重定位，即可找到段的地址。 二元数的另一个元素是<strong>长度</strong>，在重定位之前就要验证段长度是否会溢出（这又是经典的segfault了qwq）。</p>
+<h2 id="页式存储管理"><a href="#页式存储管理" class="headerlink" title="页式存储管理"></a>页式存储管理</h2><p>页式存储和段式存储是两种不同粒度的管理策略，但是其总体思路是一致的，认识如下量方面即可：</p>
+<ul>
+<li>单元划分的标准</li>
+<li>单元访问方式</li>
+</ul>
+<h3 id="页式存储的基本单元"><a href="#页式存储的基本单元" class="headerlink" title="页式存储的基本单元"></a>页式存储的基本单元</h3><p>将分块进行较小的划分之后，由于数量增多，我们希望这种效率提高，基于二进制的位运算是符合这种目标的。 我们将<strong>2的n次方的内存片段</strong>作为页式存储的单元，如512、4k、8k。4k是很常见大小。</p>
+<ul>
+<li>物理地址空间中的单元叫做物理页面，一般地，称为页帧（page frame），简称<strong>帧（frame）</strong>。</li>
+<li>逻辑地址空间中的单元称为逻辑页面，一般地，称为页面，简称<strong>页（page）</strong>。</li>
+<li>帧和页的大小必须相同。</li>
+</ul>
+<h3 id="页式存储的地址转换"><a href="#页式存储的地址转换" class="headerlink" title="页式存储的地址转换"></a>页式存储的地址转换</h3><p>首先看物理内存中的单元：帧</p>
+<p>物理内存被划分为2的n次方大小的帧，其内存物理地址仍然可以用二元组（f,o）表示，f为帧号（占s位），o为偏移。 则物理地址为： $f*2^s+o$ </p>
+<p><strong>例题</strong>：</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210816211714.jpg" alt="img" style="zoom:67%;" />
+
+<p>页和帧有一定的对应关系，在两个对应的页和帧中，页内偏移和帧内偏移一致，但通常页号大小和帧号大小不同。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210816211735.jpg" alt="img" style="zoom:67%;" />
+
+<p>构建的逻辑地址合乎人的使用习惯，页号是连续的。而物理地址空间中的帧号并不是连续的。</p>
+<p><strong>注意：并不是所有的页都有对应的帧。</strong></p>
+<p>在这种情况下，在比较大的内存空间中，需要做的仅仅是简单映射：</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210816211909.png" alt="image-20210816211909363" style="zoom: 40%;" />
+
+
+
+<h2 id="页表"><a href="#页表" class="headerlink" title="页表"></a>页表</h2><h3 id="基本要点"><a href="#基本要点" class="headerlink" title="基本要点"></a>基本要点</h3><ul>
+<li>每个进程都有一个页表，每一个页面都有一个页表项。</li>
+<li>页表是按照逻辑页密排的，所以页号并不需要存入页表项。</li>
+<li>页表项中<strong>只储存物理帧号</strong>以及一些标志位。</li>
+<li>页表中的内容随着进程的运行状态而动态变化。为了表征这些变化所以引入标志位，比如存在位、修改位、引用位等（这些后续会讲到）。</li>
+</ul>
+<p>例子：假定一个16位系统，物理内存32KB，页大小1k，则 - 有32页。0<del>9存储页内数据，A</del>F存储页号。</p>
+<ul>
+<li>页表有32项。</li>
+<li>物理帧号的地址位数一般少于逻辑地址，因为并不是进程的每一个页面都要调入内存，所以物理帧号的位数小于页号位数。</li>
+</ul>
+<p>解决页式存储管理的问题：</p>
+<ul>
+<li>需要访问两次：使用缓存（快表）</li>
+<li>页表可能非常大：间接访问（多级页表）</li>
+</ul>
+<h3 id="快表"><a href="#快表" class="headerlink" title="快表"></a>快表</h3><p>快表（TLB，translation look-aside buffer）就是将最近使用过的页表存入CPU，使用caching的方式加快页表的查询对应。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210816212138.jpg" alt="img" style="zoom:80%;" />
+
+<ul>
+<li>如果TLB命中，则物理页号将会<strong>快速</strong>且<strong>并行</strong>地获取。</li>
+<li>未命中时查询页表，随后更新TLB。</li>
+</ul>
+<p>如果命中率高，那么TLB对于页表查询开销的改善作用是非常有效的。</p>
+<h3 id="多级页表"><a href="#多级页表" class="headerlink" title="多级页表"></a>多级页表</h3><p>将线性页表转换为树形结构，即可构建多级页表，可以减小每一级的长度。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210816212207.jpg" alt="img" style="zoom:80%;" />
+
+
+
+<p>如果逻辑地址空间全满的话，对于存储空间来说，其实并没有非常显著的提升，但是实际使用过程中，会有很多空的分支，这样就可以节省一部分空间。</p>
+<h3 id="反置页表"><a href="#反置页表" class="headerlink" title="反置页表"></a>反置页表</h3><p>另一种减小页表大小的方法。</p>
+<p>由于多级页表是树形结构，对于大地址空间（虚拟地址），多级页表仍会变得非常繁琐。 而且因为每个进程都有独立的页表，所以页表的大小会随着进程的增加而增加。</p>
+<p>为了解决这些问题，我们可以<strong>不让页表和逻辑地址空间的大小相对应，而是让页表与物理地址空间的大小相对应</strong>。这就是<strong>页寄存器</strong>和<strong>反置页表</strong>的思路。</p>
+<p>在这种情况下，如果页面本身相对于页表项很大的话，页表的内存开销就不足为惧了。</p>
+<p>具体的实现方法是，让每一个物理帧都和一个页寄存器相关联。页寄存器包含如下的标志位：</p>
+<ul>
+<li>使用位（residence bit）：此帧是否被进程占用</li>
+<li>占用页号（occupier）：对应的页号p</li>
+<li>保护位（protection bits）</li>
+</ul>
+<p>这种方法的好处在于：</p>
+<ul>
+<li>大大减省页表占用内存</li>
+<li>页表大小与逻辑地址空间相比往往很小</li>
+</ul>
+<p>缺点在于其反转了逻辑，要能够依据帧号找页号（建立联系），同时在用页号查找时就相对困难。</p>
+<ul>
+<li>对逻辑地址进行哈希，随后就可以在页寄存器反向建立的查找表（通过哈希的方法建立）中进行小范围查找。</li>
+<li>这里还可以引入快表。尽管快表功耗大</li>
+<li>如果有冲突需要遍历冲突项。</li>
+</ul>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210816212919.png" alt="image-20210816212919724" style="zoom:40%;" />
+
+<p>反置页表是在页寄存器的基础上引入PID（进程标识）一同哈希，随后与反置页表中指定哈希值处对应验证，如果不一样就说明有冲突，继续遍历冲突项。如果PID和虚拟基址都相同，则找到了对应的页表。多余的开销来自于hash冲突。总体仍然是一个很好的思路。</p>
+<h2 id="段页式存储管理"><a href="#段页式存储管理" class="headerlink" title="段页式存储管理"></a>段页式存储管理</h2><p>段式存储在做内存保护方面有优势，页式存储在内存利用和优化转移到后备存储方面有优势。</p>
+<p>提出段页式因而是很自然的，通过这样的结合设计，既可以使用页式结构便利高效的内存利用，也可以使用段式的功能隔离、保护与共享。</p>
+<p>段页式存储管理中的内存共享：</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210816212717.png" alt="image-20210816212717208" style="zoom: 50%;" />
+
+
+
+<h2 id="课后题知识点整理"><a href="#课后题知识点整理" class="headerlink" title="课后题知识点整理"></a>课后题知识点整理</h2><p>可有效应对大地址空间可采用的页表手段是(多级页表和反置页表)</p>
+<p>描述段管理机制正确的是：</p>
+<ul>
+<li><ul>
+<li>段的大小可以不一致</li>
+<li>段可以有重叠(是因为共享的需求？)</li>
+<li>段可以有特权级</li>
+<li>段与段之间是可以不连续的</li>
+</ul>
+</li>
+</ul>
+<p>描述页管理机制正确的是：</p>
+<ul>
+<li><ul>
+<li>页表在内存中</li>
+<li>页可以是只读的</li>
+<li>页可以有特权级（*）</li>
+</ul>
+</li>
+</ul>
+<p>页表项标志位包括：</p>
+<ul>
+<li><ul>
+<li>存在位(resident bit)</li>
+<li>修改位(dirty bit)</li>
+<li>引用位(clock/reference bit)</li>
+<li>只读位(read only OR read/write bit)</li>
+</ul>
+</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://icbtbo.github.io/2021/08/20/os/os%EF%BC%9A%E9%9D%9E%E8%BF%9E%E7%BB%AD%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/">https://icbtbo.github.io/2021/08/20/os/os%EF%BC%9A%E9%9D%9E%E8%BF%9E%E7%BB%AD%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://icbtbo.github.io" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></div><div class="post_share"><div class="social-share" data-image="/img/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/08/23/os/lab2-%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"><img class="prev-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">os_lab2:物理内存管理</div></div></a></div><div class="next-post pull-right"><a href="/2021/08/20/os/os%EF%BC%9A%E8%BF%9E%E7%BB%AD%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/"><img class="next-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">os：连续内存分配（二）</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/09/07/os/os：死锁和进程通信/" title="os：死锁和进程通信"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-09-07</div><div class="title">os：死锁和进程通信</div></div></a></div><div><a href="/2021/08/23/os/lab2-物理内存管理/" title="os_lab2:物理内存管理"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-08-23</div><div class="title">os_lab2:物理内存管理</div></div></a></div><div><a href="/2021/08/31/os/lab4-内核线程管理/" title="os_lab4:内核线程管理"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-08-31</div><div class="title">os_lab4:内核线程管理</div></div></a></div><div><a href="/2021/09/02/os/lab6-调度器/" title="os_lab6:调度器"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-09-02</div><div class="title">os_lab6:调度器</div></div></a></div><div><a href="/2021/09/09/os/os：IO子系统/" title="os：IO子系统"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-09-09</div><div class="title">os：IO子系统</div></div></a></div><div><a href="/2021/09/04/os/os：信号量/" title="os：信号量"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-09-04</div><div class="title">os：信号量</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E8%BF%9E%E7%BB%AD%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%9A%84%E8%83%8C%E6%99%AF%E4%B8%8E%E9%9C%80%E6%B1%82"><span class="toc-number">1.</span> <span class="toc-text">非连续内存分配的背景与需求</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AE%B5%E5%BC%8F%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">段式存储管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AE%B5%E5%BC%8F%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86%E6%A6%82%E5%BF%B5"><span class="toc-number">2.1.</span> <span class="toc-text">段式存储管理概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AE%B5%E5%BC%8F%E5%AD%98%E5%82%A8%E7%9A%84%E8%AE%BF%E9%97%AE"><span class="toc-number">2.2.</span> <span class="toc-text">段式存储的访问</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E5%BC%8F%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">页式存储管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E5%BC%8F%E5%AD%98%E5%82%A8%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8D%95%E5%85%83"><span class="toc-number">3.1.</span> <span class="toc-text">页式存储的基本单元</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E5%BC%8F%E5%AD%98%E5%82%A8%E7%9A%84%E5%9C%B0%E5%9D%80%E8%BD%AC%E6%8D%A2"><span class="toc-number">3.2.</span> <span class="toc-text">页式存储的地址转换</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E8%A1%A8"><span class="toc-number">4.</span> <span class="toc-text">页表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E8%A6%81%E7%82%B9"><span class="toc-number">4.1.</span> <span class="toc-text">基本要点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%AB%E8%A1%A8"><span class="toc-number">4.2.</span> <span class="toc-text">快表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">4.3.</span> <span class="toc-text">多级页表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E7%BD%AE%E9%A1%B5%E8%A1%A8"><span class="toc-number">4.4.</span> <span class="toc-text">反置页表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AE%B5%E9%A1%B5%E5%BC%8F%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86"><span class="toc-number">5.</span> <span class="toc-text">段页式存储管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BE%E5%90%8E%E9%A2%98%E7%9F%A5%E8%AF%86%E7%82%B9%E6%95%B4%E7%90%86"><span class="toc-number">6.</span> <span class="toc-text">课后题知识点整理</span></a></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:独立功能的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现">Redis设计与实现:独立功能的实现</a><time datetime="2022-01-05T12:59:07.000Z" title="发表于 2022-01-05 20:59:07">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:多机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现">Redis设计与实现:多机数据库的实现</a><time datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:单机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现">Redis设计与实现:单机数据库的实现</a><time datetime="2022-01-04T06:38:05.000Z" title="发表于 2022-01-04 14:38:05">2022-01-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:数据结构与对象"/></a><div class="content"><a class="title" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象">Redis设计与实现:数据结构与对象</a><time datetime="2021-12-18T09:16:04.000Z" title="发表于 2021-12-18 17:16:04">2021-12-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kafka进阶篇：可靠性探究、应用、监控和高级应用"/></a><div class="content"><a class="title" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用">kafka进阶篇：可靠性探究、应用、监控和高级应用</a><time datetime="2021-11-25T01:59:17.000Z" title="发表于 2021-11-25 09:59:17">2021-11-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'pLWJLVgdxc6WLcEaFgEr2tQ2-gzGzoHsz',
+      appKey: 'OAmeyAUV6TdXoX5n1hSX4ELm',
+      placeholder: '请留下你的小脚印～',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      master: 'f94877d77182a6f9068fc12b5545e1f5',
+      tagMeta: ["博主","小伙伴","访客"],
+      friends: ["52dc4d80afb3aeab1d0deab1aa45a7b5","fd99ca470e7b5e8e2b4f76d6ed26d6cf"]
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/gh/HCLonely/Valine@latest/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

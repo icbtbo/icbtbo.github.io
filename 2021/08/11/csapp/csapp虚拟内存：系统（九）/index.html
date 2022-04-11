@@ -1,0 +1,366 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>csapp虚拟内存：系统（九） | sjc的搬砖小屋</title><meta name="keywords" content="虚拟内存"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="介绍了Linux系统中虚拟内存的使用；介绍了虚拟内存中内存映射的概念。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="csapp虚拟内存：系统（九）">
+<meta property="og:url" content="https://icbtbo.github.io/2021/08/11/csapp/csapp%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%EF%BC%9A%E7%B3%BB%E7%BB%9F%EF%BC%88%E4%B9%9D%EF%BC%89/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="介绍了Linux系统中虚拟内存的使用；介绍了虚拟内存中内存映射的概念。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://icbtbo.github.io/img/default_bg.png">
+<meta property="article:published_time" content="2021-08-11T14:41:57.000Z">
+<meta property="article:modified_time" content="2021-08-11T14:44:41.766Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="虚拟内存">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://icbtbo.github.io/img/default_bg.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="https://icbtbo.github.io/2021/08/11/csapp/csapp%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%EF%BC%9A%E7%B3%BB%E7%BB%9F%EF%BC%88%E4%B9%9D%EF%BC%89/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-08-11 22:44:41'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/default_bg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">csapp虚拟内存：系统（九）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-08-11T14:41:57.000Z" title="发表于 2021-08-11 22:41:57">2021-08-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-08-11T14:44:41.766Z" title="更新于 2021-08-11 22:44:41">2021-08-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E3%80%8A%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E3%80%8B/">《深入理解计算机系统》</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>本章对应于书中的9.7-9.8。</p>
+<hr>
+<ul>
+<li>有一系列保存在磁盘中的数据，首先以页为单位将其划分成很多数据块（虚拟页），然后根据每个数据块的特点（比如读写权限）进行组合，得到若干个由若干个数据块组成的段，通过任务结构对这些段进行描述，包括：段的起始虚拟地址、段的终止虚拟地址、段的读写权限等等，由此就确定了段中每个数据块所能用的虚拟地址范围以及读写权写。接下来根据这个约束，对每个数据块分配一个虚拟地址，然后分配一个指向数据块磁盘位置的指针，确定该数据块的读写权限，然后将所有数据块的信息组合起来，就得到了页表.</li>
+</ul>
+<blockquote>
+<p>页表是描述每个数据块的，任务结构是描述由数据块组成的段，确定了页表的信息。</p>
+</blockquote>
+<ul>
+<li>虚拟内存在磁盘的内容称为交换空间</li>
+<li>对于私有对象，页设置为只读的，页所在的段设置为私有的写时复制的。则当尝试对页进行写操作时，会触发保护故障，然后根据私有的写时复制进行操作。</li>
+<li>为了能维护自己的状态，需要将状态所在的段标记为私有写时复制的。当没有对其进行修改时，所有都共享相同的物理页，如果对其修改了，就会新建一个物理页，这样就能保证自己的状态不会被别的进程修改。</li>
+<li>内存映射仅仅是将虚拟内存和磁盘文件对应起来，并没有拷贝到内存中，只是指定虚拟页的初始值。会按需自动加载虚拟页到物理页中。</li>
+</ul>
+<hr>
+<h2 id="Intel-Core-i7-Linux内存系统"><a href="#Intel-Core-i7-Linux内存系统" class="headerlink" title="Intel Core i7/Linux内存系统"></a>Intel Core i7/Linux内存系统</h2><p>这里通过介绍运行Linux的Intel Core i7来总结虚拟内存的内容。</p>
+<h3 id="Intel-Core-i7"><a href="#Intel-Core-i7" class="headerlink" title="Intel Core i7"></a>Intel Core i7</h3><p>现在的Core i7支持48位虚拟地址空间和52位物理地址空间，还兼容32位虚拟和物理地址空间。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811215252.jpg" alt="img" style="zoom:80%;" />
+
+<p>如上图所示是一个<strong>处理器封装（Processor Package）</strong>，其中有一组基于QuickPath技术的点对点链路，为了让一个核与其他核和外部I/O桥直接通信。</p>
+<ul>
+<li><strong>高速缓存：</strong>具有3层高速缓存层次结构，其中L3是所有核共享的高速缓存，其中数据块大小为64字节，所以高速缓存具有以下性质。其中，数据块为64字节，则需要6位的块偏移，L1 d-cache有64组，则需要6位的组索引，其余的为标志位。</li>
+</ul>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811215320.jpg" alt="img" style="zoom:80%;" />
+
+<ul>
+<li><strong>页表：</strong>这里采用4级页表结构，页大小为4KB，说明需要12位的VPO，而虚拟地址为48位，所以VPN为36位，则每一级的VPN为9位。每个进程有自己私有的页表层次结构，并且存在CR3控制寄存器指向第一级页表的起始位置，其中CR3是每个进程上下文的一部分，每次进行上下文切换时，都会被恢复。页表的PTE格式如下所示</li>
+</ul>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811215333.jpg" alt="img" style="zoom:80%;" />
+
+<p>其中每个PTE为8字节，而每一级的VPN为9位，则每个PTE引用了一个$2^9*2^3 = 4KB$  的子页表，这里就要求物理页4KB对齐。由于物理地址为52位，PPO为12位，则PPN为40位，所以这里的页表物理基地址为40位。这里增加了3个权限位来控制对页的访问：<code>R/W</code>、<code>U/S</code>和<code>XD</code>，其中<code>XD</code>是64位系统引入的，限制了只能在只读代码段执行，降低了缓冲区溢出攻击的风险。此外，当MMU访问一个页时，会设置<strong>引用位（Reference Bit）</strong>A位，让内核实现页替换算法，当MMU修改一个页时，会设置**脏位（Dirty Bit)**D位，使得内核对牺牲页进行写回。以下是Core i7的页表翻译</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811215619.jpg" alt="img" style="zoom:80%;" />
+
+<ul>
+<li><p><strong>TLB：</strong>这里TLB也采用层次结构，并且为数据和指令分别使用两个一级TLB。其中，L1 d-TLB有4路64个PTE，则一共有16个组，需要4位TLBI；L1 i-TLB有4路128个PTE，一共有32组，需要5位TLBI；L2 TLB有4路512个PTE，一共有128个组，需要7位TLBI。</p>
+</li>
+<li><ul>
+<li>这里之所以使用L2 TLB而不是扩大L1 TLB，是因为如果舍弃L2 TLB而增大L1 TLB，仍然可能出现工作集大于缓存的情况，就会出现容量不命中，通过增加L2 TLB来减少不命中惩罚。</li>
+</ul>
+</li>
+</ul>
+<p>下面是Core i7地址翻译的整体架构（省略了i-cache、i-TLB和L2统一TLB）</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811215639.jpg" alt="img" style="zoom:80%;" />
+
+<p>这里可以发现一个<strong>特点：</strong>高速缓存的CI+CO=12位，而VPO也是12位。这不是巧合，而是故意这样设计来加速地址翻译。我们知道，VPO=PPO，而PPN需要通过地址翻译获得，则一开始输入虚拟地址时，就能一下等到PPO，然后等待检索PPN。此时我们就能直接将PPO输入到高速缓存中，因为PPO确定了对应的高速缓存组和块偏移量，就能先通过PPO获得对应的高速缓存组，然后只要等检索到PPN时，就能直接和高速缓存组中每一行的标志位进行比较，极大加速了地址翻译过程。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811215653.jpg" alt="img"></p>
+<h3 id="Linux虚拟内存系统"><a href="#Linux虚拟内存系统" class="headerlink" title="Linux虚拟内存系统"></a>Linux虚拟内存系统</h3><p>Linux为每个进程都维护了一个单独的虚拟地址空间，如下所示</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811220018.jpg" alt="img" style="zoom: 50%;" />
+
+<p>可以发现内核将一组连续的虚拟页（大小等于DRAM总量）映射到一组相应的连续物理页上，这样内核可以在这个虚拟内存上进行读写，实际上就是对物理内存进行读写，这为内核提供一种便利的方法来访问物理内存。这部分内容对所有进程都是一样的。</p>
+<p>此外， 与进程相关的一些信息被保存在内核虚拟内存中，并且Linux将虚拟内存组织成段集合的形式，比如代码段、数据段、共享库段以及用户栈，这些段就是已分配的连续虚拟页。每个已分配的虚拟页都保存在某个段中。通过这种组织成段的形式，可以使得虚拟地址存在间隙。这是通过内核为系统中每个进程维护一个单独的<code>task_struct</code>实现的（在最上面那块中），该结构中包含或指向内核运行该进程所需的所有信息，其中有一条指向描述虚拟内存当前状态的结构<code>mm_struct</code>，其中包含的<code>pgd</code>就是指向一级页表的起始地址，当进程被调度时，就会将<code>pdg</code>条目拷贝到CR3中，通过这种形式来改变虚拟地址空间；<code>mmap</code>指向一个链表结构的头结点，其中每个节点<code>vm_area_struct</code>就描述了虚拟内存中的一个段，其中包含：</p>
+<ul>
+<li><code>vm_end</code>段结束的虚拟地址；</li>
+<li><code>vm_start</code>段开始的虚拟地址；</li>
+<li><code>vm_prot</code>段中所有页的读写权限；</li>
+<li><code>vm_flags</code>描述当前段中的虚拟页是否与其他进程共享，如果是共享的，则称为<strong>共享段</strong>，否则称为<strong>私有段</strong>；</li>
+<li><code>vm_next</code>下一个段的节点。</li>
+</ul>
+<p>由此，就能通过将输入虚拟地址与各个节点的起始地址和终止地址进行比较，判断虚拟地址所在的段。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811220040.jpg" alt="img" style="zoom:80%;" />
+
+<p>该任务结构的存在，使得缺页异常处理多了虚拟地址的判断。当MMU翻译虚拟地址A时，由于还未将对应的虚拟页缓存到物理页中，所以触发了缺页异常，随后执行缺页异常处理程序，包含以下步骤：</p>
+<ul>
+<li><strong>判断虚拟地址A是否合法：</strong>虚拟地址是否合法，主要看它是否存在某个段中。处理程序会将虚拟地址A与链表中的所有节点中的<code>vm_start</code>和<code>vm_end</code>进行比较，判断虚拟地址A所处的段，如果不存在任一段中，则会触发段错误，终止进程。</li>
+<li><strong>判断对虚拟地址A的访问是否合法：</strong>当虚拟地址A处在某个段中时，可以通过<code>vm_prot</code>确定该段的读写许可，然后与我们所需要的操作进行对比，如果操作违背了许可，则会触发保护异常，终止进程，Linux也将其报告为段错误。</li>
+<li>如果以上两个步骤都是合法的，则执行正常的缺页处理。处理程序会选择一个物理牺牲页，如果牺牲页被修改了，则进行写回，然后将虚拟地址A对应的虚拟页写入对应的物理页中，修改对应的页表，然后从处理程序返回。</li>
+</ul>
+<p><strong>注意：</strong></p>
+<ul>
+<li>缺页异常时才会检查虚拟地址是否合法</li>
+<li>task_struct是比页表更大的结构，该task_struct是以段为单位来组织虚拟地址，其中包含了许多虚拟页，而页表是以虚拟页为单位来组织虚拟地址，所以需要先从task_struct开始。</li>
+</ul>
+<h2 id="内存映射"><a href="#内存映射" class="headerlink" title="内存映射"></a>内存映射</h2><p>如果虚拟内存系统可以集成到传统的文件系统中，就能提供一种简单而高效的方法把程序和数据加载到内存中。这里通过<strong>内存映射（Memory Mapping）</strong>将一个虚拟内存段与一个磁盘上的<strong>对象（Object）</strong>关联起来，来初始化虚拟内存段的内容，所以当我们第一次引用某个段时，它的初始值来自于磁盘上的普通文件，然后通过按需页面调度，将需要的虚拟内存段加载到物理内存中。</p>
+<blockquote>
+<p>主要说明如何将虚拟内存段和磁盘内容关联起来。<br>每个段包含的虚拟页都和磁盘文件中的某些部分关联起来，并且虚拟页的初始内容都来自于磁盘文件。</p>
+</blockquote>
+<p>内存映射可以用两种磁盘上的对象来初始化虚拟内存段：</p>
+<ul>
+<li><strong>Linux文件系统中的普通文件：</strong>比如一个可执行目标文件，将其分成页大小的数据块，用来初始化对应的虚拟内存段，如果段比文件大，则用0来填充剩下的内容。然后按需将虚拟页复制到物理页中。</li>
+<li><strong>匿名文件：</strong>内核可以创建大小任意的全是二进制0的匿名文件，该文件其实并不存在。当我们想要创建一个全为0的页，可以将虚拟页和匿名文件关联起来，当内核引用该虚拟页时，会直接覆盖牺牲页的内容，得到全为0的页，然后修改对应的页表内容。这个过程磁盘和内存之间没有实际的数据传送。</li>
+</ul>
+<blockquote>
+<p>匿名文件主要用于创建全为0的页。</p>
+</blockquote>
+<p>这些与虚拟内存段关联的磁盘内容处于<strong>交换空间（Swap Space）</strong>中（即虚拟内存在磁盘空间上的内容就是在交换空间中，也就是说交换空间保存了映射到虚拟内存中的磁盘数据），则交换空间限制了当前运行着的进程能够分配的虚拟页总数（虚拟内存大小确定了，虚拟页大小也确定了，则页数目也就确定了）。</p>
+<p>内存映射概念的存在，使得我们可以重新回去看共享对象和私有对象、<code>fork</code>函数和<code>execve</code>函数。</p>
+<h3 id="共享对象"><a href="#共享对象" class="headerlink" title="共享对象"></a>共享对象</h3><p>如上所述，虚拟内存段中通过<code>vm_prot</code>确定该虚拟内存段中的虚拟页是否在进程之间共享，如果共享，则称该段为<strong>共享段</strong>，则各个进程在该段中的操作是互相可见的，且变化也会反映在磁盘上；如果不共享，则称该段为<strong>私有段</strong>，则各个进程在该段中的操作是互相不可见的，也不会反映到磁盘上。</p>
+<p>如下图所示，在进程1中，当我们将磁盘上的一个对象映射到它的虚拟内存的一个区域，就会使得虚拟页对应的PTE指向该对象，当引用该对象时，就会将对应的虚拟页加载到物理页中；而进程2也要将该对象与自己的一个共享段关联起来时，当对其引用时，由于每个对象都有一个唯一的文件名，所以内核可以发现进程1已经将该对象加载到物理页，就直接在进程2中将对应的PTE指向相同的物理页就行了。</p>
+<p><strong>注意：</strong></p>
+<ul>
+<li>进程1和进程2 的虚拟地址空间是不同的</li>
+<li>即使一个对象与多个进程的共享段关联，物理内存中始终只有该对象的一个副本。</li>
+</ul>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811221129.jpg" alt="img" style="zoom:80%;" />
+
+<h3 id="私有对象"><a href="#私有对象" class="headerlink" title="私有对象"></a>私有对象</h3><p>如下图所示，在进程1中，当我们将磁盘上的一个对象映到该进程的一个私有段时，就会使得虚拟页对应的PTE指向该对象，当引用该对象时，就会将对应的虚拟页加载到物理页中；当进程2也要将该对象与自己的一个私有段关联起来时，当对其引用时，也会直接在进程2中将对应的PTE指向相同的物理页，即当未对私有对象进行修改时，物理内存中只会保存同一个对象副本，且各个进程中对该对象的PTE都是只读的，而虚拟内存段被标记为<strong>私有写时复制的（Private Copy-On-Write）</strong>。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811221142.jpg" alt="img"></p>
+<p>但是假设进程2对该私有对象的某个页面进行修改时，会触发保护故障，故障处理程序就会在物理内存中创建一个该物理页的副本，然后让进程2的对应PTE指向新的副本，并设置该虚拟页具有写权限，然后处理程序返回，从写指令重新运行。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811221150.jpg" alt="img"></p>
+<blockquote>
+<p>图中大块的表示对象，可能由很多个页组成，当我们尝试对其中一个页进行修改时，只会对该页进行复制，并修改该页对应的PTE，而该对象的其他页保持不变。</p>
+</blockquote>
+<p><strong>问题：</strong>当虚拟页的读写权限修改后，与所在段的读写权限冲突时，是否要修改虚拟页所在的段？即上图进程2深色和浅色的页是处在不用段中？还是说段的读写权限是用来初始化其中包含的虚拟页的读写权限，但是虚拟页的读写权限可以自己修改？</p>
+<p><strong>答</strong>：个人认为是第二个答案</p>
+<p>通过写时复制这种策略，尽可能延迟物理内存中的拷贝，能最大效率地使用物理内存。</p>
+<blockquote>
+<p>当只对虚拟空间进行读操作，则永远不会复制，而是共享相同的物理内存。</p>
+</blockquote>
+<h3 id="fork函数"><a href="#fork函数" class="headerlink" title="fork函数"></a><code>fork</code>函数</h3><p>在父进程中调用<code>fork</code>函数时，会创建一个具有相似但独立虚拟地址空间的子进程，并分配一个唯一的PID，而写时复制技术会给<code>fork</code>函数提供一个高效的解决方案：</p>
+<ul>
+<li>为了具有和父进程相同的<strong>虚拟内存状态</strong>，内核会复制父进程的<code>mm_struct</code></li>
+<li>为了具有和父进程相同的<strong>虚拟内存段分配</strong>，内核会复制父进程的<code>vm_area_struct</code></li>
+<li>为了子进程和父进程具有相同的<strong>虚拟内存内容</strong>，内核会复制父进程的页表，就能将相同的磁盘内容映射到相同的虚拟页中，并将虚拟页缓存在相同的物理页中。</li>
+<li>为了子进程和父进程的虚拟地址空间能<strong>相互独立</strong>，两个进程的页都设置为只读的，且段都标记为私有的写时复制。当父子进程都没有对页进行修改时，父子进程是共享相同的物理内存的，当其中一个进程对页进行修改时，就会对该页进行写时复制，并为该页赋予写权限，并更新进程对应的页表。</li>
+</ul>
+<h3 id="execve函数"><a href="#execve函数" class="headerlink" title="execve函数"></a><code>execve</code>函数</h3><p>当我们运行<code>execve(&quot;a.out&quot;, NULL, NULL)</code>执行可执行目标文件<code>a.out</code>时，包含以下步骤：</p>
+<ul>
+<li><p><strong>删除用户段：</strong>将进程的虚拟地址空间中的用户段删除，即删除<code>vm_area_struct</code>和页表。</p>
+</li>
+<li><p><strong>映射私有段：</strong>首先为可执行目标文件中的不同数据节创建对应的段，即在<code>vm_area_struct</code>中新建节点，并设置对应的段起始虚拟地址、段终止虚拟地址，设置这些段为私有写回复制的。然后将这些段通过内存映射与<code>a.out</code>中的内容关联起来。（对私有对象的读写参考2.2）</p>
+</li>
+<li><ul>
+<li>对于需要初始化为0的段，可将其与匿名文件进行关联。</li>
+</ul>
+</li>
+<li><p><strong>映射共享段：</strong>对于共享库的内容，会将其映射到共享库的内存映射段中，即在<code>vm_area_struct</code>中创建一个共享段，然后将其与共享库的内容关联起来，这样就能在多个进程中共享相同的共享库。（对共享对象的读写参考2.1）</p>
+</li>
+<li><ul>
+<li>如果共享库有维护状态的静态变量，比如随机生成器在调用时会维持状态，且不同的进程的状态不同，对于这种要修改静态数据的函数，应该将该段标记为私有写时复制的，这样就能在不同进程中维护自己独立的状态。</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811222240.jpg" alt="img"></p>
+<ul>
+<li>设置程序计数器，使其指向代码段的入口点。</li>
+</ul>
+<blockquote>
+<p>通过将对象映射到不同的段中，就能决定对该对象进行读写时的特点。</p>
+</blockquote>
+<p><strong>注意：</strong>当程序运行时，我们并没有加载任何内容到内存中，所做的只是设置内存映射，在内核中创建数据结构，由此创建了虚拟地址空间和这些对象之间的映射关系，而实际的拷贝工作会由缺页异常按需完成。</p>
+<h3 id="通过mmap函数自定义内存映射"><a href="#通过mmap函数自定义内存映射" class="headerlink" title="通过mmap函数自定义内存映射"></a>通过<code>mmap</code>函数自定义内存映射</h3><p>用户通过<code>mmap</code>函数能自己创建虚拟内存段，并将对象映射到该段中，由此我们可以通过修改该段的参数，来达到对对象的设置。比如设置该虚拟内存段是全部进程共享的，则映射到该段的对象就能在所有进程中共享。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/mman.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">mmap</span><span class="params">(<span class="keyword">void</span> *start, <span class="keyword">size_t</span> length, <span class="keyword">int</span> port, <span class="keyword">int</span> flags, <span class="keyword">int</span> fd, <span class="keyword">off_t</span> offset)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>文件描述符<code>fd</code>指定一个磁盘文件，该函数会将磁盘文件中偏移<code>offset</code>处的<code>length</code>个字节的对象映射到虚拟内存中的<code>start</code>处。<code>start</code>指定的段如果是有效的，则内核会将其映射到指定段，如果指定段的部分虚拟地址空间被某个已存在的段包含了，则内核会另外找一个有效的位置，<code>start</code>可以设置为NULL，让内核自动分配。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210811222252.jpg" alt="img" style="zoom:80%;" />
+
+<p>其中，**<code>prot</code>**对应于段结构中的<code>vm_prot</code>参数，用来确定该虚拟内存段的读写权限：<code>PROT_EXEC</code>表示该段中的页是可执行的；<code>PROT_READ</code>表示该段中的页是可读的；<code>PROT_WRITE</code>表示该段中的页是可写的；<code>PROT_NONE</code>表示该段内的页是不可访问的。</p>
+<p>**<code>flags</code>**对应于段结构中的<code>vm_flags</code>：<code>MAP_PRIVATE</code>表示该段是私有的写时复制的；<code>MAP_SHARED</code>表示该段是共享的。也可以设置<code>MAP_ANON</code>，表示是一个匿名对象。</p>
+<p>当函数执行成功时，会返回指向该段的指针，如果失败，则返回<code>MAP_FAILED</code>。</p>
+<p>可以通过以下函数来删除虚拟内存中的段：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/mman.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">munmap</span><span class="params">(<span class="keyword">void</span> *start, <span class="keyword">size_t</span> length)</span></span>; </span><br></pre></td></tr></table></figure>
+
+<p>使用自定义内存映射的<strong>好处在于：</strong></p>
+<ul>
+<li>使得磁盘文件中的一块数据能与虚拟内存地址空间中的某个段建立映射关系，此时我们就能直接通过对该虚拟内存段的访问来间接访问磁盘文件内容，不必执行文件I/O操作，也无需对文件内容进行缓存处理。并且虚拟内存进行按序页面调度的，当你访问了文件内容，它就会将对应的虚拟页加载到物理页中，此时就能从内存中很快地访问文件内容。当你处理大文件或频繁读写文件时能提速，因为此时就直接将文件内容加载到物理内存中了，一切读写操作都是在物理内存中进行的，速度特别快，只有在内核将其牺牲时，才会进行写回。</li>
+<li>通过内存映射方法，我们还能定义一个进程共享的虚拟内存段，使得能让多个进程对一个区域进行访问和修改。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://icbtbo.github.io/2021/08/11/csapp/csapp%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%EF%BC%9A%E7%B3%BB%E7%BB%9F%EF%BC%88%E4%B9%9D%EF%BC%89/">https://icbtbo.github.io/2021/08/11/csapp/csapp%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%EF%BC%9A%E7%B3%BB%E7%BB%9F%EF%BC%88%E4%B9%9D%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://icbtbo.github.io" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/">虚拟内存</a></div><div class="post_share"><div class="social-share" data-image="/img/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/08/12/csapp/csapp%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%EF%BC%9A%E6%98%BE%E5%BC%8F%E5%88%86%E9%85%8D%E5%99%A8%EF%BC%88%E4%B9%9D%EF%BC%89/"><img class="prev-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">csapp虚拟内存：显式分配器（九）</div></div></a></div><div class="next-post pull-right"><a href="/2021/08/11/csapp/csapp%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%EF%BC%9A%E6%A6%82%E5%BF%B5%EF%BC%88%E4%B9%9D%EF%BC%89/"><img class="next-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">csapp虚拟内存：概念（九）</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/08/12/csapp/csapp虚拟内存：显式分配器（九）/" title="csapp虚拟内存：显式分配器（九）"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-08-12</div><div class="title">csapp虚拟内存：显式分配器（九）</div></div></a></div><div><a href="/2021/08/11/csapp/csapp虚拟内存：概念（九）/" title="csapp虚拟内存：概念（九）"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-08-11</div><div class="title">csapp虚拟内存：概念（九）</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Intel-Core-i7-Linux%E5%86%85%E5%AD%98%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.</span> <span class="toc-text">Intel Core i7&#x2F;Linux内存系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Intel-Core-i7"><span class="toc-number">1.1.</span> <span class="toc-text">Intel Core i7</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.2.</span> <span class="toc-text">Linux虚拟内存系统</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E6%98%A0%E5%B0%84"><span class="toc-number">2.</span> <span class="toc-text">内存映射</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.1.</span> <span class="toc-text">共享对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%81%E6%9C%89%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.2.</span> <span class="toc-text">私有对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fork%E5%87%BD%E6%95%B0"><span class="toc-number">2.3.</span> <span class="toc-text">fork函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#execve%E5%87%BD%E6%95%B0"><span class="toc-number">2.4.</span> <span class="toc-text">execve函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E8%BF%87mmap%E5%87%BD%E6%95%B0%E8%87%AA%E5%AE%9A%E4%B9%89%E5%86%85%E5%AD%98%E6%98%A0%E5%B0%84"><span class="toc-number">2.5.</span> <span class="toc-text">通过mmap函数自定义内存映射</span></a></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:独立功能的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现">Redis设计与实现:独立功能的实现</a><time datetime="2022-01-05T12:59:07.000Z" title="发表于 2022-01-05 20:59:07">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:多机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现">Redis设计与实现:多机数据库的实现</a><time datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:单机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现">Redis设计与实现:单机数据库的实现</a><time datetime="2022-01-04T06:38:05.000Z" title="发表于 2022-01-04 14:38:05">2022-01-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:数据结构与对象"/></a><div class="content"><a class="title" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象">Redis设计与实现:数据结构与对象</a><time datetime="2021-12-18T09:16:04.000Z" title="发表于 2021-12-18 17:16:04">2021-12-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kafka进阶篇：可靠性探究、应用、监控和高级应用"/></a><div class="content"><a class="title" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用">kafka进阶篇：可靠性探究、应用、监控和高级应用</a><time datetime="2021-11-25T01:59:17.000Z" title="发表于 2021-11-25 09:59:17">2021-11-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'pLWJLVgdxc6WLcEaFgEr2tQ2-gzGzoHsz',
+      appKey: 'OAmeyAUV6TdXoX5n1hSX4ELm',
+      placeholder: '请留下你的小脚印～',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      master: 'f94877d77182a6f9068fc12b5545e1f5',
+      tagMeta: ["博主","小伙伴","访客"],
+      friends: ["52dc4d80afb3aeab1d0deab1aa45a7b5","fd99ca470e7b5e8e2b4f76d6ed26d6cf"]
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/gh/HCLonely/Valine@latest/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

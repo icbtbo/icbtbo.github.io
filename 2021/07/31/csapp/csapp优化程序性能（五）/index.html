@@ -1,0 +1,569 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>csapp优化程序性能（五） | sjc的搬砖小屋</title><meta name="keywords" content="程序性能优化"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="介绍了一些优化程序性能的方法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="csapp优化程序性能（五）">
+<meta property="og:url" content="https://icbtbo.github.io/2021/07/31/csapp/csapp%E4%BC%98%E5%8C%96%E7%A8%8B%E5%BA%8F%E6%80%A7%E8%83%BD%EF%BC%88%E4%BA%94%EF%BC%89/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="介绍了一些优化程序性能的方法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://icbtbo.github.io/img/default_bg.png">
+<meta property="article:published_time" content="2021-07-31T13:07:17.000Z">
+<meta property="article:modified_time" content="2021-07-31T13:10:26.769Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="程序性能优化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://icbtbo.github.io/img/default_bg.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="https://icbtbo.github.io/2021/07/31/csapp/csapp%E4%BC%98%E5%8C%96%E7%A8%8B%E5%BA%8F%E6%80%A7%E8%83%BD%EF%BC%88%E4%BA%94%EF%BC%89/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-07-31 21:10:26'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/default_bg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">csapp优化程序性能（五）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-07-31T13:07:17.000Z" title="发表于 2021-07-31 21:07:17">2021-07-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-07-31T13:10:26.769Z" title="更新于 2021-07-31 21:10:26">2021-07-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E3%80%8A%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E3%80%8B/">《深入理解计算机系统》</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><strong>程序优化的步骤：</strong></p>
+<ol>
+<li>消除不必要的工作，让代码尽可能有效地执行所期望的任务。包括消除不必要的函数调用、条件测试和内存引用。</li>
+<li>利用处理器提供的指令级并行能力来同时执行多条指令，会介绍降低一个计算不同部分之间的数据相关，来提高并行度。</li>
+<li>使用<strong>代码剖析程序（Profiler）</strong>来测量程序各部分性能，找到代码中效率最低的部分。</li>
+</ol>
+<p>我们这里简单地将程序优化看成是一系列转换的线性变换，但是实际上我们需要通过汇编代码来确定代码执行的具体细节，比如寄存器使用不当、可以并行执行的操作、如何使用处理器资源等等，然后不断修改源代码使得编译器能够产生高效的代码就可以了，由此保证了代码的可移植性。</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><h3 id="编译器的能力和局限性"><a href="#编译器的能力和局限性" class="headerlink" title="编译器的能力和局限性"></a>编译器的能力和局限性</h3><p>编译器能够提供对程序的不同优化级别，命令行选项<code>-Og</code>调用GCC使用一组基本的优化，而<code>-O1</code>、<code>-O2</code>和<code>-O3</code>可以让GCC进行更大量的优化， 但是过度的优化会使得程序规模变大，且更难调试，通常使用<code>-O2</code>级别的优化。</p>
+<p>但是编译器只会提供安全的优化，保证优化前后的程序由一样的行为，这里会有两个OB（<strong>optimization blocker</strong>）使得编译器不会对其进行优化：</p>
+<ul>
+<li><strong>内存别名使用（Memory Aliasing）</strong>：编译器会假设不同的指针可能会指向相同的位置，如果发现会改变程序行为，就会避免一些优化</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">twiddle1</span><span class="params">(<span class="keyword">long</span> *xp, <span class="keyword">long</span> *yp)</span></span>&#123;</span><br><span class="line">  *xp += *yp;</span><br><span class="line">  *xp +== *yp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上代码需要6次内存引用（2次读取<code>yp</code>、2次读取<code>xp</code>和2次写<code>xp</code>），我们可以将其优化为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">twiddle2</span><span class="params">(<span class="keyword">long</span> *xp, <span class="keyword">long</span> *yp)</span></span>&#123;</span><br><span class="line">  *xp += <span class="number">2</span>* *yp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里只需要3次内存引用（1次读取<code>yp</code>，1次读取<code>xp</code>和1次写<code>xp</code>），但是编译器会假设<code>xp</code>和<code>yp</code>指向相同的内存位置，由此函数<code>twiddle1</code>和<code>twiddle2</code>的计算结果就不同了，所以编译器不会讲<code>twiddle2</code>作为<code>twiddle1</code>的优化版本。</p>
+<ul>
+<li><strong>函数调用</strong>：大多数编译器不会试图判断函数是否没有副作用，如果没有就会对函数调用进行优化，但是编译器会假设最坏的情况，保持所有函数的调用不变</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">f</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">func1</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> f()+f()+f()+f();</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">func2</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">4</span>*f();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>函数<code>func1</code>需要调用4次函数<code>f</code>，而函数<code>func2</code>只需要调用1次函数<code>f</code>，但是如果函数<code>f</code>是以下形式</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">long</span> count = <span class="number">0</span>;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">f</span><span class="params">()</span></span>&#123;</span><br><span class="line"> <span class="keyword">return</span> count++;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>就具有副作用，改变调用<code>f</code>的次数会改变程序行为，所以编译器不会将函数<code>func1</code>优化为<code>func2</code>。</p>
+<p>我们通常可以使用<strong>内联函数替换（Inline Substitution，内联）</strong>来优化函数调用，它直接将函数调用替换成函数体，然后在对调用函数进行优化。比如以上例子中，会得到一个内联函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">func1in</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">long</span> t = count++;</span><br><span class="line">  t += count++;</span><br><span class="line">  t += count++;</span><br><span class="line">  t += count++;</span><br><span class="line">  <span class="keyword">return</span> t;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>由此不仅减少了函数调用带来的开销，并且能够对代码进一步优化，得到以下形式</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">func1opt</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">long</span> t = <span class="number">4</span>*count+<span class="number">6</span>;</span><br><span class="line">  count += <span class="number">4</span>;</span><br><span class="line">  <span class="keyword">return</span> t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在GCC中，我们可以使用<code>-finline</code>、<code>-O1</code>或更高级别的优化来得到这种优化。但是具有以下<strong>缺点</strong>：</p>
+<ul>
+<li>GCC只支持在单个文件中定义的函数的内联</li>
+<li>当对某个函数调用使用了内联，则无法在该函数调用上使用断点和跟踪</li>
+<li>当对某个函数调用使用了内联，则无法使用代码剖析来分析函数调用</li>
+</ul>
+<h3 id="表示程序性能"><a href="#表示程序性能" class="headerlink" title="表示程序性能"></a>表示程序性能</h3><p>许多过程都含有在一组元素上迭代的循环，比如以下<code>psum1</code>是对一个长度为n的向量计算前置和，而<code>psum2</code>是使用<strong>循环展开（Loop Unrolling）</strong>技术对其进行优化</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">psum1</span><span class="params">(<span class="keyword">float</span> a[], <span class="keyword">float</span> p[], <span class="keyword">long</span> n)</span></span>&#123;</span><br><span class="line">  <span class="keyword">long</span> i;</span><br><span class="line">  p[<span class="number">0</span>] = a[<span class="number">0</span>];</span><br><span class="line">  <span class="keyword">for</span>(i=<span class="number">1</span>, i&lt;n; i++)&#123;</span><br><span class="line">    p[i] = p[i<span class="number">-1</span>]+a[i];</span><br><span class="line">  &#125;</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">psum2</span><span class="params">(<span class="keyword">float</span> a[], <span class="keyword">float</span> p[], <span class="keyword">long</span> n)</span></span>&#123;</span><br><span class="line">  <span class="keyword">long</span> i;</span><br><span class="line">  p[<span class="number">0</span>] = a[<span class="number">0</span>];</span><br><span class="line">  <span class="keyword">for</span>(i=<span class="number">1</span>; i&lt;n<span class="number">-1</span>; i+=<span class="number">2</span>)&#123;</span><br><span class="line">    <span class="keyword">float</span> mid_val = p[i<span class="number">-1</span>]+a[i];</span><br><span class="line">    p[i] = mid_val;</span><br><span class="line">    p[i+<span class="number">1</span>] = mid_val+a[i+<span class="number">1</span>];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span>(i&lt;n)&#123;</span><br><span class="line">    p[i] = p[i<span class="number">-1</span>]+a[i];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于使用循环展开优化的函数，迭代次数通常会减少，并且我们更关注对于给定的向量长度<code>n</code>，程序运行的速度如何，所以我们使用度量标准<strong>CPE（Cycles Per Element）</strong>来度量计算每个元素需要的周期数，CPE更适合用来度量执行重复计算的程序。</p>
+<p>我们可以调整输入的向量大小，得到以上两个函数计算时所需的周期数，然后使用最小二乘拟合来得到曲线图。<code>psum1</code>函数的结果为<code>368+9.0n</code>，而<code>psum2</code>的结果为<code>368+6.0n</code>，其中斜率就是CPE指标，所以<code>psum1</code>为9.0，<code>psum2</code>为6.0，所以根据CPE指标，<code>psum2</code>更优于<code>psum1</code>。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731200237.png" alt="image-20210731200237324" style="zoom:67%;" />
+
+<h2 id="对程序进行优化"><a href="#对程序进行优化" class="headerlink" title="对程序进行优化"></a>对程序进行优化</h2><h3 id="程序实例"><a href="#程序实例" class="headerlink" title="程序实例"></a>程序实例</h3><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731201038.png" alt="image-20210731201037968" style="zoom:67%;" />
+
+<p>我们通过声明数据类型<code>data_t</code>、初始值<code>IDENT</code>和运算符<code>OP</code>来测量整数/浮点数数据的累加/累乘函数的性能。</p>
+<h3 id="消除循环的低效率"><a href="#消除循环的低效率" class="headerlink" title="消除循环的低效率"></a>消除循环的低效率</h3><p>我们对<code>combine1</code>函数进行编译得到如下图所示的汇编代码，可以发现每次循环迭代时都会执行<code>call vec_length</code>指令来计算向量长度，但是向量长度在该函数中是不变的，所以我们可以将计算向量长度的代码移到循环外面，得到<code>combine2</code>。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731200923.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731200929.jpg" alt="img"></p>
+<p>当前性能如下图所示</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731200937.png" alt="img"></p>
+<p>该优化称为<strong>代码移动（Code Motion）</strong>：识别要执行多次（比如在循环内）但是计算结果不会改变的计算（会增加很多额外的函数调用，出现<code>ret</code>指令会降低流水线效率），就将该计算移到前面。</p>
+<blockquote>
+<p>由于存在函数调用OB，编译器会非常小心修改调用函数位置以及调用函数次数，所以编译器不会自动完成上述优化。</p>
+</blockquote>
+<h3 id="减少过程调用"><a href="#减少过程调用" class="headerlink" title="减少过程调用"></a>减少过程调用</h3><p>过程调用通常会带来开销，并且会阻碍编译器对程序进行优化。</p>
+<p>我们可以看到<code>combine2</code>函数在循环中会反复调用<code>get_vev_element</code>函数来获得下一个向量元素，而在<code>get_vev_element</code>函数中会反复检查数组边界，我们可以发现该步骤在<code>combine2</code>函数中是冗余的，会损害性能。</p>
+<p>我们可以将其改为以下形式来减少函数调用</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731200951.jpg" alt="img" style="zoom:67%;" />
+
+<p>但是该函数的性能如下图所示，性能并没有提升，说明内循环中的其他操作才是瓶颈。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731201001.png" alt="img"></p>
+<blockquote>
+<p>由于存在函数调用OB，编译器不会自动完成上述优化</p>
+</blockquote>
+<h3 id="减少不必要的内存引用"><a href="#减少不必要的内存引用" class="headerlink" title="减少不必要的内存引用"></a>减少不必要的内存引用</h3><p>我们对<code>combine3</code>进行编译，得到循环内对应的汇编代码</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731201224.jpg" alt="img" style="zoom:80%;" />
+
+<p>可以发现每次循环时，首先会从内存中读取<code>*dest</code>的值，然后将其写回内存中，再一次迭代时，又从内存中读取刚写入的<code>*dest</code>值，这就存在不必要的内存读写。</p>
+<blockquote>
+<p>声明为指针的数据会保存在数据栈内存中，读取指针值时会读取内存，对指针值进行赋值时，会写入内存</p>
+</blockquote>
+<p>我们可以将代码修改为以下形式</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731201237.jpg" alt="img" style="zoom:80%;" />
+
+<p>当函数中的局部变量数目少于寄存器数目时，就会将局部变量保存到寄存器中，就无须在内存中进行读写了，其对应的汇编代码为</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731201245.jpg" alt="img" style="zoom:80%;" />
+
+<p>对应的性能为</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731201254.png" alt="img" style="zoom:80%;" />
+
+<blockquote>
+<p>由于存在内存别名使用，两个函数可能会不同的行为，所以编译器不会自动进行优化。</p>
+</blockquote>
+<h2 id="现代处理器"><a href="#现代处理器" class="headerlink" title="现代处理器"></a>现代处理器</h2><p>以上方法只是减少过程调用的开销，消除一些重大的OB，但是想要进一步优化程序性能，就需要针对目标处理器微体系结构来进行优化。</p>
+<p>现代处理器在指令运行中提供了大量的优化，支持<strong>指令级并行</strong>，使得能够同时对多条指令进行求值，并且通过一系列机制来确保指令级并行能获得机器级程序要求的顺序语义模型，这就使得处理器的实际操作和机器及程序描述的有很大差别。</p>
+<h3 id="整体操作"><a href="#整体操作" class="headerlink" title="整体操作"></a>整体操作</h3><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731201703.jpg" alt="img" style="zoom:67%;" />
+
+<p>如上图所示是一个简化的Intel处理器的结构，包含<strong>两个特点：</strong></p>
+<ul>
+<li><strong>超标量（Superscalar）：</strong>处理器可以在每个时钟周期执行多个操作</li>
+<li><strong>乱序（Out-of-order）：</strong>指令执行的顺序不一定和机器代码的顺序相同，提高指令级并行</li>
+</ul>
+<p>该处理器主要由两部分构成：</p>
+<ul>
+<li><p><strong>指令控制单元（Instruction Control Unit，ICU）：</strong>通过取值控制逻辑从指令高速缓存中读出指令序列，并根据这些指令序列生成一组针对程序数据的基本操作，然后发送到EU中。</p>
+</li>
+<li><ul>
+<li><p><strong>取指控制逻辑：</strong>包含分支预测，来完成确定要取哪些指令。</p>
+</li>
+<li><ul>
+<li><strong>分支预测（Branch Prediction）技术：</strong>当程序遇到分支时，程序有两个可能的前进方向，处理器会猜测是否选择分支，同时预测分支的目标地址，直接取目标地址处的指令。</li>
+</ul>
+</li>
+<li><p><strong>指令高速缓存（Instruction Cache）：</strong>特殊的高速存储器，包含最近访问的指令。ICU通常会很早就取指，给指令译码留出时间。</p>
+</li>
+<li><p><strong>指令译码逻辑：</strong>接收实际的程序指令，将其转换成一组基本操作（微操作），并且可以在不同的硬件单元中并行地执行不同的基本操作。比如x86-64中的<code>addq %rax, 8(%rdx)</code>，可以分解成访问内存数据<code>8(%rdx)</code>、将其加到<code>%rax</code>上、将结果保存会内存中。</p>
+</li>
+<li><p><strong>退役单元（Retirement Unit）：</strong>指令译码时会将指令信息放到队列中，确保它遵守机器级程序的顺序语义。队列中的指令主要包含两个状态：</p>
+</li>
+<li><ul>
+<li><strong>退役（Retired）：</strong>当指令完成，且引起这条指令的分支点预测正确，则这条指令会从队列中出队，然后完成对寄存器文件的更新。</li>
+<li><strong>清空（Flushed）：</strong>如果引起该指令的分支点预测错误，就会将该指令出队，并丢弃计算结果，由此保证预测错误不会改变程序状态。</li>
+<li><strong>寄存器文件：</strong>包含整数、浮点数和最近的SSE和AVX寄存器。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>执行单元（Execution Unit，EU）：</strong>使用投机执行技术执行由ICU产生的基本操作，通常每个时钟周期会接收多个基本操作，将这些操作分配到一组功能单元中来执行实际的操作。</p>
+</li>
+<li><ul>
+<li><p><strong>投机执行（Speculative Execution）技术：</strong>直接执行ICU的预测指令，但是最终结果不会存放在程序寄存器或数据内存中，直到处理器能确定应该执行这些指令。分支操作会被送到EU中来确定分支预测是否正确。如果预测错误，EU会丢弃分支点之后计算出来的结果，并告诉分支模块。</p>
+</li>
+<li><p><strong>功能单元：</strong>专门用来处理不同类型操作的模块，并且可以使用寄存器重命名机制将“操作结果”直接在不同单元间进行交换，这是数据转发技术的高级版本。</p>
+</li>
+<li><ul>
+<li><p><strong>存储模块</strong>和<strong>加载模块</strong>负责通过数据高速缓存来读写数据内存，各自包含一个<strong>加法器</strong>来完成地址的计算，并且单元内部都包含<strong>缓冲区</strong>来保存未完成的内存操作请求集合。每个时钟周期可完成开始一个操作。</p>
+</li>
+<li><p><strong>分支模块：</strong>当得知分支预测错误，就会在正确的分支目的中取指。</p>
+</li>
+<li><p><strong>算数运算模块：</strong>能够执行各种不同的操作。</p>
+</li>
+<li><p><strong>寄存器重命名机制（Register Renaming）：</strong>会维护一个寄存器的重命名表来进行数据转发，主要有以下步骤</p>
+</li>
+<li><ul>
+<li>当执行一条更新寄存器<code>r</code>的指令<code>I1</code>，会产生一个指向该操作结果的唯一标识符<code>t</code>，然后将<code>(r, t)</code>加入重命名表中。</li>
+<li>当后续有需要用到寄存器<code>r</code>作为操作数的指令时，会将<code>t</code>作为操作数源的值输入到单元中进行执行</li>
+<li>当<code>I1</code>执行完成时，就会产生一个结果<code>(v, t)</code>，表示标识符<code>t</code>的操作产生了结果<code>v</code>，然后所有等待<code>t</code>作为源的操作都会使用<code>v</code>作为源值。</li>
+<li><strong>意义：</strong>使用寄存器重命名机制，可以将值从一个操作直接转发到另一个操作，而无需进行寄存器文件的读写，使得后续的操作能在第一个操作<code>I1</code>完成后尽快开始。并且投机执行中，在预测正确之前不会将结果写入寄存器中，而通过该机制就可以预测着执行操作的整个序列。</li>
+<li><strong>注意：</strong>重命名表只包含未进行寄存器写操作的寄存器，如果有个操作需要的寄存器没有在重命名表中，就可以直接从寄存器文件中获取值。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>数据高速缓存（Data Cache）：</strong>存放最近访问的数据值。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="功能单元的性能"><a href="#功能单元的性能" class="headerlink" title="功能单元的性能"></a>功能单元的性能</h3><p>我们提供一种参考机Intel Core i7 Haswell，总共具有8个功能单元</p>
+<ul>
+<li>整数运算、浮点乘、整数和浮点数除法、分支</li>
+<li>整数运算、浮点加、整数乘、浮点乘</li>
+<li>加载、地址计算</li>
+<li>加载、地址计算</li>
+<li>存储</li>
+<li>整数运算</li>
+<li>整数运算、分支</li>
+<li>存储、地址计算</li>
+</ul>
+<p>其中，整数运算包含加法、位级操作和移位等等。存储操作需要两个功能单元，一个用于计算存储地址，一个使用保存数据。我们可以发现，其中有4个能进行整数运算的功能单元，说明处理器一个时钟周期内可执行4个整数运算操作。其中有2个能进行加载的功能单元，说明处理器一个时钟周期可读取两个操作数。</p>
+<p>该参考机的算数运算性能如下图所示</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731202411.jpg" alt="img" style="zoom:67%;" />
+
+<ul>
+<li><strong>延迟（Latency）：</strong>表示完成单独一个运算所需的时钟周期总数</li>
+<li><strong>发射时间（Issue Time）：</strong>表示采用流水线时，两个连续的同类型运算之间需要的最小时钟周期数</li>
+<li><strong>容量（Capacity）：</strong>表示能够执行该运算的功能单元数量</li>
+</ul>
+<p>每个运算都能在对应的功能单元进行计算，每个功能单元内部都是用流水线实现的，使得运算在功能单元内是分阶段执行的。发射时间为1的运算，意味着对应的功能单元是<strong>完全流水线化的（Fully Popelined）</strong>，要求运算在功能单元内的各个阶段是连续的，且逻辑上独立的，才能每个时钟周期执行一个运算。当发射时间大于1，意味着该运算在功能单元内不是完全流水线化的，特别是除法运算的延迟等于发射时间，意味着需要完全执行完当前的除法运算，才能执行下一条除法运算。</p>
+<p>从系统层次而言，可以通过吞吐量来衡量运算的性能，对于一个容量为<code>C</code>，发射时间为<code>I</code>的操作而言，其吞吐量为<code>C/I</code>。</p>
+<p>根据以上运算性能，我们可以得到CPE值的两个基本界限，来描述程序的最大性能：</p>
+<ul>
+<li><p><strong>延迟界限：</strong></p>
+</li>
+<li><ul>
+<li><strong>意义：</strong>当指令存在数据相关时，指令的执行必须严格顺序执行，就会限制了处理器指令级并行的能力，延迟界限就会限制程序性能。</li>
+<li><strong>解释：</strong>当存在数据相关时，指令是严格顺序执行的，意味着我们无法通过指令并行来进行加速。而通过参考机的运算性能知道执行每种运算所需的延迟，就确定了执行该运算所需的最小时钟周期数，此时CPE的延迟界限就是运算操作的延迟。比如整数乘法的延迟为3个时钟周期，意味着我们需要用3个时钟周期才能完成一个整数乘法运算，不可能更快了，所以当前的CPE值为3。</li>
+</ul>
+</li>
+<li><p><strong>吞吐量界限：</strong></p>
+</li>
+<li><ul>
+<li><strong>意义：</strong>刻画了处理器功能单元的原始计算能力，是程序性能的终极限制。</li>
+<li><strong>解释：</strong>表示我们考虑系统中的所有的功能单元，计算出来运算结果的最大速率。比如参考机含有4个可以执行整数加法的功能单元，且整数加法的发射时间为1，所以系统执行整数加法的吞吐量为4，意味着CPE值为0.25，但是参考机中只有两个支持加载的功能单元，意味着每个时钟周期只能读取两个操作数，所以这里的吞吐量就受到了加载的限制，CPE值为0.5。再比如参考机内只含有一个能执行整数乘法的功能单元，说明一个时钟周期只能执行一个整数乘法，此时性能吞吐量就受到了功能单元运算的限制，CPE值为1。</li>
+</ul>
+</li>
+</ul>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731202429.jpg" alt="img" style="zoom:80%;" />
+
+<p>我们可以发现除了整数加法外，<code>combine4</code>的结果与延迟界限结果相同，说明<code>combine4</code>中存在数据相关问题。</p>
+<h3 id="处理器操作的抽象模型"><a href="#处理器操作的抽象模型" class="headerlink" title="处理器操作的抽象模型"></a>处理器操作的抽象模型</h3><p>这里介绍一种非正式的程序的<strong>数据流（Data-flow）</strong>表示，可以展示不同操作之间的数据相关是如何限制操作的执行顺序，并且图中的<strong>关键路径（Cirtical Path）</strong>给出了执行这些指令所需的时钟周期数的下界。</p>
+<h4 id="从机器级代码到数据流图"><a href="#从机器级代码到数据流图" class="headerlink" title="从机器级代码到数据流图"></a>从机器级代码到数据流图</h4><p>由于对于大向量而言，循环执行的计算是决定性能的主要因素，我们这里主要考虑循环的数据流图。首先可以得到循环对应的机器级代码</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731202926.jpg" alt="img" style="zoom:67%;" />
+
+<p>我们根据机器级代码可以获得寄存器在执行指令时进行的操作，然后可以得到以下对应的数据流图。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731202937.jpg" alt="img" style="zoom:67%;" />
+
+<p>上方寄存器为输入的寄存器，下方寄存器为输出的寄存器，从寄存器指向操作的箭头表示该操作读取寄存器的值，从操作指向寄存器表示操作的结果保存在寄存器中，如果某些操作产生的值不对应于任何寄存器，就在操作间用弧线连接起来。其中，<code>vmulsd (%rdx), %xmm0, %xmm0</code>包含从内存中读取<code>(%rdx)</code>的值，然后计算浮点数乘法的基本操作。</p>
+<p>根据数据流图可以将寄存器分成以下几种：</p>
+<ul>
+<li><strong>只读：</strong>只包含寄存器指向操作的箭头，不包含从操作指向该寄存器的箭头。比如<code>%rax</code>。</li>
+<li><strong>只写：</strong>只包含从操作指向该寄存器的箭头，不包含从寄存器指向操作的箭头。</li>
+<li><strong>局部：</strong>寄存器值在循环内部修改和使用，迭代与迭代之间不相关。比如条件码寄存器。</li>
+<li><strong>循环：</strong>寄存器既作为源又作为目的，并且一次迭代中产生的值会在另一次迭代中使用。比如<code>%rdx</code>和<code>%xmm0</code>。</li>
+</ul>
+<p><strong>注意：</strong>因为迭代之间是数据相关的，必须保证循环寄存器在上一轮迭代中计算完成，才能在下一轮迭代中使用该循环寄存器，所以循环寄存器之间的操作链决定了限制性能的数据相关。</p>
+<p>我们可以对数据流图进行修改，上方寄存器只有只读寄存器和循环寄存器，下方寄存器只有只写寄存器和循环寄存器，得到如下图所示的数据流图</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731202952.jpg" alt="img" style="zoom:80%;" />
+
+<p>所以同时出现在上方和下方的寄存器为循环寄存器。我们删除非循环寄存器以外的寄存器，并删除不在循环寄存器之间的操作，得到以下简化的数据流图</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731203003.jpg" alt="img" style="zoom:80%;" />
+
+<p>其中下方每个寄存器代表了一个数据相关：</p>
+<ul>
+<li><code>%xmm0</code>：当前迭代中<code>%xmm0</code>的计算，需要上一轮计算出来的<code>%xmm0</code>以及<code>%rdx</code></li>
+<li><code>%rdx</code>：当前迭代中<code>%rdx</code>的计算，需要上一轮计算出来的<code>%rdx</code></li>
+</ul>
+<p>我们可以将上图中的数据流重复n次，就得到了函数中循环n次的数据流图</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731203013.jpg" alt="img" style="zoom:80%;" />
+
+<p>可以发现里面有两个数据相关链，只有当上方的计算完成时才会计算下一个。并且由于相邻迭代的循环寄存器存在数据相关，所以只能顺序执行，所以要独立地考虑操作对应的延迟。由于参考机中浮点数乘法的延迟为5个时钟周期，而整数加法的延迟为1个时钟周期，所以左侧数据相关链是关键路径，限制了程序的性能。只要左侧操作的延迟大于1个时钟周期（比右侧的延迟大），则程序的CPE就是该操作的延迟。</p>
+<p><strong>注意：</strong>数据流中的关键路径只是提供程序需要周期数的下界，还有很多其他因素会限制性能。比如当我们将左侧的操作变为整数加法时，根据数据流预测的CPE应该为1，但是由于这里的操作变得很快，使得其他操作供应数据的速度不够快，造成实际得到的CPE为1.27。</p>
+<h3 id="循环展开"><a href="#循环展开" class="headerlink" title="循环展开"></a>循环展开</h3><p>我们可以通过对函数实行循环展开，增加每次迭代计算的元素数量，减少循环的迭代次数。</p>
+<p>这里介绍一种<strong>kx1循环展开</strong>方法，格式如下所示，将一个循环展开成了两部分，第一部分是每次循环处理k个元素，能够减少循环次数；第二部分处理剩下还没计算的元素，是逐个进行计算的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> k 2</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">combine5</span><span class="params">(vec_ptr v, <span class="keyword">data_t</span> *dest)</span></span>&#123;</span><br><span class="line">  <span class="keyword">long</span> i;</span><br><span class="line">  <span class="keyword">long</span> length = vec_length(v);</span><br><span class="line">  <span class="keyword">long</span> limit = length-k+<span class="number">1</span>;</span><br><span class="line">  <span class="keyword">data_t</span> *data = get_vec_start(v);</span><br><span class="line">  <span class="keyword">data_t</span> acc = IDENT;</span><br><span class="line">  <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;limit; i+=k)&#123;</span><br><span class="line">    acc = ((acc OP data[i]) OP data[i+<span class="number">1</span>]) ... OP data[i+k<span class="number">-1</span>];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span>(; i&lt;length; i++)&#123;</span><br><span class="line">    acc = acc OP data[i];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> acc;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们看到改程序具有以下性能</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731203100.jpg" alt="img" style="zoom:80%;" />
+
+<p>可以发现整数加法优化到了延迟界限，因为延迟展开能减少不必要的操作的数量（例如循环索引计算和条件分支），但是其他的并没有优化，因为其延迟界限是主要限制因素。</p>
+<p>可以发现循环展开无法突破延迟界限。我们可以得到<code>combine5</code>循环部分的汇编代码</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731203108.jpg" alt="img" style="zoom:80%;" />
+
+<p>可以得到对应的数据流图</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731203136.jpg" alt="img" style="zoom:80%;" />
+
+<p>其中，<code>%xmm0</code>保存<code>acc</code>，<code>%rdx</code>保存<code>i</code>。可以发现循环展开虽然能将循环次数减少为原来的k分之一，但是每次迭代所需的时钟周期变为了原来的k倍，使得总体的延迟不变，无法突破延迟界限。</p>
+<p><strong>总结：</strong>延迟展开可以减少迭代次数，使得不必要的操作数量减少，但是没有解决数据相关问题，无法突破延迟界限。</p>
+<h3 id="多个变量提高并行性"><a href="#多个变量提高并行性" class="headerlink" title="多个变量提高并行性"></a>多个变量提高并行性</h3><p>我们可以通过引入多个变量来提高循环中的并行性。</p>
+<p>这里介绍一种<strong>kxk循环展开</strong>方法，格式如下所示，将一个循环展开成了两部分，第一部分是每次循环处理k个元素，能够减少循环次数，并且引入k个变量保存结果；第二部分处理剩下还没计算的元素，是逐个进行计算的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> K 2</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">combine6</span><span class="params">(vec_ptr v, <span class="keyword">data_t</span> *dest)</span></span>&#123;</span><br><span class="line">  <span class="keyword">long</span> i;</span><br><span class="line">  <span class="keyword">long</span> length = vec_length(v);</span><br><span class="line">  <span class="keyword">long</span> limit = length-k+<span class="number">1</span>;</span><br><span class="line">  <span class="keyword">data_t</span> *data = get_vec_start(v);</span><br><span class="line">  <span class="keyword">data_t</span> acc0 = IDENT;</span><br><span class="line">  <span class="keyword">data_t</span> acc1 = IDENT;</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">data_t</span> acck_1 = IDENT; <span class="comment">//k个变量</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;limit; i+=k)&#123;</span><br><span class="line">    acc0 = acc0 OP data[<span class="number">0</span>];</span><br><span class="line">    acc1 = acc1 OP data[<span class="number">1</span>];</span><br><span class="line">    ...</span><br><span class="line">    acck_1 = acck_1 OP data[k<span class="number">-1</span>]; <span class="comment">//更新k个变量</span></span><br><span class="line">  &#125;  </span><br><span class="line">  <span class="keyword">for</span>(; i&lt;length; i++)&#123;</span><br><span class="line">    acc0 = acc0 OP data[i];</span><br><span class="line">  &#125;</span><br><span class="line">  *dest = acc0 OP acc1 OP ... OP acck_1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们看到改程序具有以下性能</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731203209.jpg" alt="img" style="zoom:80%;" />
+
+<p>可以通过循环对应的数据流图来分析</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731203217.jpg" alt="img" style="zoom:80%;" />
+
+<p>其中，<code>%xmm0</code>保存<code>acc0</code>，<code>%xmm</code>保存<code>%acc1</code>，<code>%rdx</code>保存<code>i</code>。可以发现，我们通过在循环中引入多个变量，使得原来在同一个循环寄存器中的浮点数乘法运算分配到不同的循环寄存器中，就消除了循环寄存器的数据相关限制，就可以使用不同的功能单元，或利用功能单元的流水线进行并行计算，就<strong>能突破延迟界限</strong>。</p>
+<p>为了接近吞吐量界限，我们需要使用系统中的所有功能单元，并且保证功能单元的流水线始终是慢的，所以对于容量为C、延迟为L的操作而言，需要设置 K&gt;=C*L（最快每个时钟周期执行一个操作)。</p>
+<p><strong>限制</strong></p>
+<p>使用kxk循环展开时，我们需要申请k个局部变量来保存中间结果，如果k大于寄存器的数目，则中间结果就会保存到内存的堆栈中，使得计算中间结果要反复读写内存，造成性能损失。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731203708.jpg" alt="img" style="zoom: 67%;" />
+
+<h3 id="改变结合顺序提供并行性"><a href="#改变结合顺序提供并行性" class="headerlink" title="改变结合顺序提供并行性"></a>改变结合顺序提供并行性</h3><p><code>combine5</code>中还存在数据相关，是因为循环里中的计算如下所示</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">acc = (acc OP data[i]) OP data[i+<span class="number">1</span>];</span><br></pre></td></tr></table></figure>
+
+<p>中间计算的局部结果会不断保存到<code>acc</code>的循环寄存器中，使得数据流图如下所示</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731203731.png" alt="img" style="zoom:80%;" />
+
+<p>如果我们改变计算方法为下图所示</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">acc = acc OP (data[i] OP data[i+<span class="number">1</span>]) ;</span><br></pre></td></tr></table></figure>
+
+<p>则中间计算的局部结果不会直接保存到acc的循环寄存器中，数据流图变为如下所示</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731203747.jpg" alt="img" style="zoom: 33%;" />
+
+<p>由此能减少关键路径中<code>%xmm0</code>的操作数量，并且通过循环展开来利用多个功能单元、及其功能单元的流水线，这样就能够<strong>突破延迟界限</strong>。</p>
+<p><strong>注意：</strong>我们可以统计对<code>acc</code>的操作次数，知道关键路径中有几个操作。</p>
+<p>该方法的性能如下图所示</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731204917.jpg" alt="img" style="zoom:80%;" />
+
+<p>可以发现kx1a的性能类似于kxk的性能。</p>
+<h2 id="分支预测"><a href="#分支预测" class="headerlink" title="分支预测"></a>分支预测</h2><p>在使用投机执行的处理器中，会直接执行预测分支的执行，并且EU不会直接修改寄存器或内存，知道确定预测是否正确，当分支预测错误时，会丢弃之前执行的结果，重新开始取指令过程，会造成性能损失。</p>
+<p>但是一般分支是很容易预测的，比如函数<code>combine2</code>中的边界检查一定是正确的，循环操作除了最后一次分支是跳出循环以外，之前的分支都是继续循环操作，所以这些分支是可预测的，并且分支指令的执行和我们循环体的执行通常不会有数据相关，所以当我们使用AT策略预测分支时，能使得将其全部流水线化，不会造成很大的性能损失。</p>
+<blockquote>
+<p>当分支是高度可预测，且分支和循环体不存在数据相关时，不会造成很大的性能损失</p>
+</blockquote>
+<p>如果处理器将条件分支使用条件传送时，就能将其变为流水线的一部分，无需进行分支预测，也就没有了预测错误的处罚了。我们需要尝试不断修改代码使编译器将分支变成条件传送指令。</p>
+<p>比如以下代码</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731205627.jpg" alt="img" style="zoom:67%;" />
+
+<p>会被翻译成条件控制形式，但是如果我们改成以下代码，就会翻译成条件传送</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731205642.jpg" alt="img" style="zoom:67%;" />
+
+<h2 id="内存性能"><a href="#内存性能" class="headerlink" title="内存性能"></a>内存性能</h2><p>所有现代处理器都包含一个或多个高速缓存存储器，现在考虑所有数据都存放在高速缓存中，研究设计加载（从内存到寄存器）和存储（从寄存器到内存）操作的程序性能。</p>
+<h3 id="加载性能"><a href="#加载性能" class="headerlink" title="加载性能"></a>加载性能</h3><p>我们的参考机包含两个加载功能单元，意味着当流水线完全时，一个时钟周期最多能够执行两个加载操作，由于每个元素的计算需要加载一个值，所以CPE的最小值只能是0.5。对于每个元素的计算需要加载k个值的应用而言，CPE的最小值只能是k/2。</p>
+<p>由于我们之前计算内存地址都是通过循环索引<code>i</code>，所以两个加载操作之间不存在数据相关（每一轮的加载操作只要根据<code>i</code>计算地址，无需等到上一轮加载操作完成才能计算当前轮的内存地址），也就不用考虑加载延迟。</p>
+<p>但是对于如下所示的链表函数，计算当前加载地址，需要先获取上一轮的地址，由此加载操作之间就存在数据相关，就需要考虑加载延迟了。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731205919.jpg" alt="img" style="zoom:80%;" />
+
+<p>循环中对应的汇编代码为</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731205929.jpg" alt="img" style="zoom:80%;" />
+
+<p>其中，<code>%rax</code>保存<code>len</code>，<code>%rdi</code>保存<code>ls</code>，我们可以得到对应的数据流图</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731205938.jpg" alt="img" style="zoom:80%;" />
+
+<p>可以发现这里有两个数据相关的循环寄存器<code>%rdi</code>和<code>%rax</code>，其中加法操作需要的延迟通常比加载操作的延迟小，所以左侧为关键路径，这里测得该函数的CPE为4.0，就是加载操作对应的延迟。</p>
+<h3 id="存储性能"><a href="#存储性能" class="headerlink" title="存储性能"></a>存储性能</h3><p>存储操作是将寄存器中的数据保存到内存中，所以存储操作不会产生数据相关，但是存储操作会影响加载操作，出现<strong>写/读相关（Write/Read Dependency）</strong>。</p>
+<p>首先需要先了解加载和存储单元的细节。如下图所示，在存储单元中会有一个<strong>存储缓冲区</strong>，用来保存发射到存储单元但是还未保存到数据高速缓存的存储操作的地址和数据，由此避免存储操作之间的等待。并且加载操作会检查存储缓冲区中是否有需要的地址，如果有，则直接将存储缓冲区中的数据作为加载操作的结果。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731210038.jpg" alt="img" style="zoom:80%;" />
+
+<p>我们看以下代码，会从<code>*src</code>处读取数据，然后将其保存到<code>*dest</code></p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731210054.jpg" alt="img" style="zoom:80%;" />
+
+<p>循环内对应的汇编代码为</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731210112.jpg" alt="img" style="zoom:80%;" />
+
+<p>我们可以的带对应的数据流图</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731210125.jpg" alt="img" style="zoom:67%;" />
+
+<p>我们需要注意以下几点：</p>
+<ul>
+<li><code>movq %rax, (%rsi)</code>表示存储指令，其被分为两个操作，首先会进行<code>s_addr</code>操作计算存储操作的地址，在存储缓冲区创建一个条目，并设置该条目的地址字段。完成后才进行<code>s_data</code>操作来计算存储操作的数据字段。</li>
+<li>后续<code>movq (%rdi), %rax</code>的<code>load</code>操作会等待<code>s_addr</code>操作计算完成后，判断加载操作的地址和<code>s_addr</code>操作计算出来的地址是否相同，如果相同，则需要等<code>s_data</code>操作将其结果保存到存储缓冲区中，如果不同，则<code>load</code>操作无需等待<code>s_data</code>操作。所以<code>load</code>操作和<code>s_addr</code>操作之间存在数据相关，而<code>load</code>操作和<code>s_data</code>操作之间存在有条件的数据相关。</li>
+</ul>
+<p>对其进行重新排列，并且去除掉非循环寄存器，可以得到如下的数据流图</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210731210137.jpg" alt="img" style="zoom:67%;" />
+
+<p>我们可以发现：</p>
+<ul>
+<li>当加载操作和存储操作的地址相同：图中的虚线就存在，则<code>%rax</code>为循环寄存器，关键路径为左侧路径，包含存储数据计算、加载操作和加法操作，CPE大约为7.3。</li>
+<li>当加载操作和存储操作的地址不同：图中的虚线就不存在，则<code>%rax</code>就不是循环寄存器，其中<code>s_data</code>操作和<code>load</code>操作可以并行执行，关键路径为右侧路径，只有一个减法操作，CPE大约为1.3。</li>
+</ul>
+<p><strong>注意：</strong>要在更大范围观察写/读相关，不一定存在一个迭代中，可能在相邻迭代中，只要发现有存储操作，而后执行相同地址的加载操作，就会有写/读相关。</p>
+<h2 id="程序剖析"><a href="#程序剖析" class="headerlink" title="程序剖析"></a>程序剖析</h2><p><strong>程序剖析（Profiling）</strong>会在代码中插入工具代码，来确定程序的各个部分需要的时间。可以在实际的基准数据上运行实际程序的同时进行剖析，不过运行会比正常慢一些（2倍左右）。</p>
+<p>Unix系统提供一个剖析程序GPROF，提供以下信息：</p>
+<ul>
+<li>确定程序中每个函数运行的CPU时间，用来确定函数的重要性</li>
+<li>计算每个函数被调用的次数，来理解程序的动态行为</li>
+</ul>
+<p>GPROF具有以下特点：</p>
+<ul>
+<li>计时不准确。编译过的程序为每个函数维护一个计时器，操作系统每隔x会中断一次程序，当中断时，会确定程序正在执行什么函数，然后将该函数的计时器加上x。</li>
+<li>假设没有执行内联替换，则调用信息是可靠的</li>
+<li>默认情况下，不会对库函数计时，将库函数的执行时间算到调用该库函数的函数上</li>
+</ul>
+<p><strong>使用方法：</strong></p>
+<ul>
+<li>程序要为剖析而编译和连接，加上<code>-pg</code>，并且确保没有进行内联替换优化函数调用</li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -Og -pg prog.c -o prog</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>正常执行程序，会产生一个文件<code>gmon.out</code></li>
+<li>使用GPROF分析<code>gmon.out</code>的数据</li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gprof prog</span><br></pre></td></tr></table></figure>
+
+<p>书中的几个建议：</p>
+<ul>
+<li>使用快速排序来进行排序</li>
+<li>通常使用迭代来代替递归</li>
+<li>使用哈希函数来对链表进行划分，减少链表扫描的时间</li>
+<li>链表的创建要注意插入位置的影响</li>
+<li>要尽量使得哈希函数分布均匀，并且要产生较大范围</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://icbtbo.github.io/2021/07/31/csapp/csapp%E4%BC%98%E5%8C%96%E7%A8%8B%E5%BA%8F%E6%80%A7%E8%83%BD%EF%BC%88%E4%BA%94%EF%BC%89/">https://icbtbo.github.io/2021/07/31/csapp/csapp%E4%BC%98%E5%8C%96%E7%A8%8B%E5%BA%8F%E6%80%A7%E8%83%BD%EF%BC%88%E4%BA%94%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://icbtbo.github.io" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%A8%8B%E5%BA%8F%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">程序性能优化</a></div><div class="post_share"><div class="social-share" data-image="/img/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/08/04/csapp/csappECF%EF%BC%9A%E5%BC%82%E5%B8%B8%E5%92%8C%E8%BF%9B%E7%A8%8B%EF%BC%88%E5%85%AB%EF%BC%89/"><img class="prev-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">csappECF：异常和进程（八）</div></div></a></div><div class="next-post pull-right"><a href="/2021/07/24/csapp/csapp%E5%A4%84%E7%90%86%E5%99%A8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%EF%BC%88%E5%9B%9B%EF%BC%89/"><img class="next-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">csapp处理器体系结构（四）</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E7%9A%84%E8%83%BD%E5%8A%9B%E5%92%8C%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">1.1.</span> <span class="toc-text">编译器的能力和局限性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A8%E7%A4%BA%E7%A8%8B%E5%BA%8F%E6%80%A7%E8%83%BD"><span class="toc-number">1.2.</span> <span class="toc-text">表示程序性能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E4%BC%98%E5%8C%96"><span class="toc-number">2.</span> <span class="toc-text">对程序进行优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E5%AE%9E%E4%BE%8B"><span class="toc-number">2.1.</span> <span class="toc-text">程序实例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E9%99%A4%E5%BE%AA%E7%8E%AF%E7%9A%84%E4%BD%8E%E6%95%88%E7%8E%87"><span class="toc-number">2.2.</span> <span class="toc-text">消除循环的低效率</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%8F%E5%B0%91%E8%BF%87%E7%A8%8B%E8%B0%83%E7%94%A8"><span class="toc-number">2.3.</span> <span class="toc-text">减少过程调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%8F%E5%B0%91%E4%B8%8D%E5%BF%85%E8%A6%81%E7%9A%84%E5%86%85%E5%AD%98%E5%BC%95%E7%94%A8"><span class="toc-number">2.4.</span> <span class="toc-text">减少不必要的内存引用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%B0%E4%BB%A3%E5%A4%84%E7%90%86%E5%99%A8"><span class="toc-number">3.</span> <span class="toc-text">现代处理器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E6%93%8D%E4%BD%9C"><span class="toc-number">3.1.</span> <span class="toc-text">整体操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%9F%E8%83%BD%E5%8D%95%E5%85%83%E7%9A%84%E6%80%A7%E8%83%BD"><span class="toc-number">3.2.</span> <span class="toc-text">功能单元的性能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E5%99%A8%E6%93%8D%E4%BD%9C%E7%9A%84%E6%8A%BD%E8%B1%A1%E6%A8%A1%E5%9E%8B"><span class="toc-number">3.3.</span> <span class="toc-text">处理器操作的抽象模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%8E%E6%9C%BA%E5%99%A8%E7%BA%A7%E4%BB%A3%E7%A0%81%E5%88%B0%E6%95%B0%E6%8D%AE%E6%B5%81%E5%9B%BE"><span class="toc-number">3.3.1.</span> <span class="toc-text">从机器级代码到数据流图</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%AA%E7%8E%AF%E5%B1%95%E5%BC%80"><span class="toc-number">3.4.</span> <span class="toc-text">循环展开</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E4%B8%AA%E5%8F%98%E9%87%8F%E6%8F%90%E9%AB%98%E5%B9%B6%E8%A1%8C%E6%80%A7"><span class="toc-number">3.5.</span> <span class="toc-text">多个变量提高并行性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%B9%E5%8F%98%E7%BB%93%E5%90%88%E9%A1%BA%E5%BA%8F%E6%8F%90%E4%BE%9B%E5%B9%B6%E8%A1%8C%E6%80%A7"><span class="toc-number">3.6.</span> <span class="toc-text">改变结合顺序提供并行性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E6%94%AF%E9%A2%84%E6%B5%8B"><span class="toc-number">4.</span> <span class="toc-text">分支预测</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E6%80%A7%E8%83%BD"><span class="toc-number">5.</span> <span class="toc-text">内存性能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD%E6%80%A7%E8%83%BD"><span class="toc-number">5.1.</span> <span class="toc-text">加载性能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E6%80%A7%E8%83%BD"><span class="toc-number">5.2.</span> <span class="toc-text">存储性能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E5%89%96%E6%9E%90"><span class="toc-number">6.</span> <span class="toc-text">程序剖析</span></a></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:独立功能的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现">Redis设计与实现:独立功能的实现</a><time datetime="2022-01-05T12:59:07.000Z" title="发表于 2022-01-05 20:59:07">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:多机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现">Redis设计与实现:多机数据库的实现</a><time datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:单机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现">Redis设计与实现:单机数据库的实现</a><time datetime="2022-01-04T06:38:05.000Z" title="发表于 2022-01-04 14:38:05">2022-01-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:数据结构与对象"/></a><div class="content"><a class="title" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象">Redis设计与实现:数据结构与对象</a><time datetime="2021-12-18T09:16:04.000Z" title="发表于 2021-12-18 17:16:04">2021-12-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kafka进阶篇：可靠性探究、应用、监控和高级应用"/></a><div class="content"><a class="title" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用">kafka进阶篇：可靠性探究、应用、监控和高级应用</a><time datetime="2021-11-25T01:59:17.000Z" title="发表于 2021-11-25 09:59:17">2021-11-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'pLWJLVgdxc6WLcEaFgEr2tQ2-gzGzoHsz',
+      appKey: 'OAmeyAUV6TdXoX5n1hSX4ELm',
+      placeholder: '请留下你的小脚印～',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      master: 'f94877d77182a6f9068fc12b5545e1f5',
+      tagMeta: ["博主","小伙伴","访客"],
+      friends: ["52dc4d80afb3aeab1d0deab1aa45a7b5","fd99ca470e7b5e8e2b4f76d6ed26d6cf"]
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/gh/HCLonely/Valine@latest/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

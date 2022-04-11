@@ -1,0 +1,397 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>kafka进阶篇：日志存储 | sjc的搬砖小屋</title><meta name="keywords" content="消息中间件,kafka"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="介绍了Kafka日志存储相关的一些知识点，例如消息的具体存储格式、消息的检索以及消息的清理规则。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kafka进阶篇：日志存储">
+<meta property="og:url" content="https://icbtbo.github.io/2021/11/22/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E6%97%A5%E5%BF%97%E5%AD%98%E5%82%A8/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="介绍了Kafka日志存储相关的一些知识点，例如消息的具体存储格式、消息的检索以及消息的清理规则。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://icbtbo.github.io/img/default_bg.png">
+<meta property="article:published_time" content="2021-11-22T12:47:22.000Z">
+<meta property="article:modified_time" content="2022-03-22T13:01:25.127Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="消息中间件">
+<meta property="article:tag" content="kafka">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://icbtbo.github.io/img/default_bg.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="https://icbtbo.github.io/2021/11/22/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E6%97%A5%E5%BF%97%E5%AD%98%E5%82%A8/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-03-22 21:01:25'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/default_bg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">kafka进阶篇：日志存储</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-11-22T12:47:22.000Z" title="发表于 2021-11-22 20:47:22">2021-11-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-03-22T13:01:25.127Z" title="更新于 2022-03-22 21:01:25">2022-03-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/%E3%80%8AKafka%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E8%B7%B5%E5%8E%9F%E7%90%86%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/">《Kafka核心设计与实践原理》阅读笔记</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="文件目录布局"><a href="#文件目录布局" class="headerlink" title="文件目录布局"></a>文件目录布局</h1><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20211122210338.png" alt="image-20211122210338721" style="zoom:80%;" />
+
+<p>上图所示的是kafka在某一时刻的文件目录布局，每一个根目录都会包含最基本的 4 个检查点文件(xxx-checkpoint)和 meta.prop创ies 文件。当broker配置了多个根目录时，会挑选分区数最少的根目录来创建主题。</p>
+<p>主题、分区、副本、Log和LogSegment之间的关系如下图所示：</p>
+<img src="https://img-blog.csdnimg.cn/20190801152646942.png" alt="img" style="zoom: 75%;" />
+
+<ul>
+<li>一个分区副本对应一个日志(Log)，一个日志会分配成多个日志分段(LogSegment)，Log在物理上以文件夹形式存储，而LogSegment对应磁盘上的一个日志文件和两个索引文件及可能的其他文件。</li>
+<li>向Log追加消息时是顺序写入的，只有最后一个LogSegment才能执行写入，称为<strong>activeSegment</strong>，满足一定条件时，需要创建新的activeSegment。</li>
+<li>每个日志及索引的文件名根据基准偏移量(BaseOffset)命名，表示当前LogSegment中第一条消息的offset。</li>
+</ul>
+<h1 id="日志格式"><a href="#日志格式" class="headerlink" title="日志格式"></a>日志格式</h1><h2 id="消息压缩"><a href="#消息压缩" class="headerlink" title="消息压缩"></a>消息压缩</h2><ul>
+<li>Kafka 会将多条消息一起进行压缩，生产者发送的压缩数据在 broker 中也是保持压缩状态进行存储的 ，消费者从服务端获取的也是压缩的消息，消费者在处理消息之前才会解压消息。</li>
+<li>压缩方式通过compression.type来配置：producer、gzip、snappy、lz4、uncmpressed。</li>
+<li>消息压缩时，整个消息集压缩为内层消息，整体作为外层消息的value。外层消息的offset保存了内层消息最后一条记录的offset，而内层消息在压缩时会从0开始分配一个offset，内层消息的offset会在服务端进行转换。</li>
+</ul>
+<h2 id="v2版本日志格式"><a href="#v2版本日志格式" class="headerlink" title="v2版本日志格式"></a>v2版本日志格式</h2><blockquote>
+<p>旧版本的消息格式（日志格式）不在这里展示，有需要可查阅5.2节的内容</p>
+</blockquote>
+<img src="https://img-blog.csdnimg.cn/2019080115325191.png" alt="img" style="zoom: 67%;" />
+
+<p>该版本引入了变长整型(Varints)和ZigZag编码来保存数值。如果消息本身没有 key，那么 key length 字段为-1，旧版本的消息用int类型来编码，需要4个字节，而如果使用Varints加ZigZag来编码则只需要1个字节。</p>
+<p><strong>Varints</strong>：</p>
+<ul>
+<li>使用一个或多个字节来序列化整数的一种方法。数值越小，其占用的字节数就越少。</li>
+<li>每个字节都有一个位于最高位的 msb 位( most significant bit)，除最后一个字节的msb为0外，其余msb位都设置为1。除 msb 位外，剩余的 7 位用于存储数据本身，即一个字节可以表示$2^7=128$ 个值。</li>
+<li>Varints中采用的是小端字节序，即最小的字节放在前面。</li>
+<li>举例：<ul>
+<li>数字1用varints来表示-&gt; 0000 0001；</li>
+<li>数字300用varints来表示-&gt;1010 1100 0000 0010；</li>
+</ul>
+</li>
+</ul>
+<p><strong>ZigZag编码</strong>：</p>
+<ul>
+<li>若使用 int64等有符号整数类型表示一个负数，那么哪怕是-1，其编码后的长度始终为4个字节。为了使编码更加高效， Varints 使用了 ZigZag 的编码方式。</li>
+<li>ZigZag编码以一种锯齿形( zig-zags)的方式来回穿梭正负整数， 将带符号整数映射为无符号整数，这样可以使绝对值较小的负数仍然享有较小的Varints编码值。</li>
+<li>比如-1编码为1, 1编码为 2, -2编码为3，2编码为4，-3编码为5，以此类推。</li>
+<li>将原值转换为ZigZag编码的公式为 ( n &lt;&lt; 1 ) ^ ( n &gt;&gt; 31 )  该公式是对sint32类型的原值而言的。</li>
+</ul>
+<h1 id="日志索引"><a href="#日志索引" class="headerlink" title="日志索引"></a>日志索引</h1><p>Kafka 中的索引文件以**稀疏索引( sparse index)**的方式构造消息的索引，它并不保证每个消息在索引文件中都有对应的索引项 。</p>
+<p><em>每当写入一定量(由 broker 端参数 <code>log.index.interval.bytes</code> 指定，默认值为 4096，即 4KB)的消息时，偏移量索引文件和时间戳索引文件分别增加一个偏移量索引项和时间戳索引项</em>。（通过增大或减小 <code>log.index.interval.bytes</code> 的值，可以增加或缩小索引项的密度）</p>
+<p>偏移量索引文件中的偏移量是单调递增的，查询指定偏移量时，使用二分查找法来快速定位偏移量的位置，如果指定的偏移量不在索引文件中，则会返回小于指定偏移量的最大偏移量。查询指定时间戳时，也根据二分查找法来查找不大于该时间戳的最大偏移量，至于要找到对应的物理文件位置还需要根据偏移量索引文件来进行再次定位。</p>
+<p><strong>日志分段文件进行切分的条件</strong>：</p>
+<ul>
+<li>当前日志分段文件的大小超过了 broker 端参数 <code>log.segment.bytes</code> 配置的值</li>
+<li>当前日志分段中消息的最大时间戳与当前系统的时间戳的差值大于 <code>log.roll .ms</code> 或 <code>log.roll.hours</code> 参数配置的值。（若都配置了，则ms的优先级高）</li>
+<li>偏移量索引文件或时间戳索引文件的大小达到 broker端参数 <code>log.index.size.max.bytes</code> 配置的值</li>
+<li>追加的消息的偏移量与当前日志分段的偏移量之间的差值大于Integer.MAX_VALUE, 即要追加的消息的偏移量不能转变为相对偏移量</li>
+</ul>
+<blockquote>
+<p><strong>日志分段的大小</strong>：Kafka 在创建索引文件的时候会为其预分配 <code>log.index.size.max.bytes</code> 大小的空间，注意这一点与日志分段文件不同，只有当索引文件进行切分的时候，Kafka 才会把该索引文件裁剪到实际的数据大小 。也就是说与当前活跃的日志分段对应的索引文件的大小固定为<code>log.index.size.max.bytes</code>，而其余日志分段对应的索引文件的大小为实际的占用空间。</p>
+</blockquote>
+<h2 id="偏移量索引（-index）"><a href="#偏移量索引（-index）" class="headerlink" title="偏移量索引（.index）"></a>偏移量索引（.index）</h2><p>偏移量索引文件用来建立消息偏移量(offset)到物理地址之间的映射关系，方便快速定位消息所在的物理文件位置</p>
+<p>每个索引占8个字节，分为两个部分：</p>
+<ul>
+<li>relativeOffset：相对偏移量，表示消息相对于baseOffset的偏移量，当前索引文件的文件名即为baseOffset值</li>
+<li>position：消息在日志分段文件中的物理地址</li>
+</ul>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20211122215526.png" alt="image-20211122215526937" style="zoom:70%;" />
+
+<h2 id="时间戳索引（-timeindex）"><a href="#时间戳索引（-timeindex）" class="headerlink" title="时间戳索引（.timeindex）"></a>时间戳索引（.timeindex）</h2><p>时间戳索引文件则根据指定的时间戳( timestamp)来查找对应的偏移量 信息。</p>
+<p>每个索引占12个字节，分为两个部分：</p>
+<ul>
+<li>timestamp：当前日志分段最大的时间戳</li>
+<li>relativeOffset：时间戳对应的消息的相对偏移量</li>
+</ul>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20211122215609.png" alt="image-20211122215609268" style="zoom:70%;" />
+
+<h1 id="日志清理"><a href="#日志清理" class="headerlink" title="日志清理"></a>日志清理</h1><p>Kafka 将消息存储在磁盘中，为了控制磁盘占用空间的不断增加就需要对消息做一定的清理操作。</p>
+<ul>
+<li><p>可以通过broker端参数<code>log.cleanup.policy</code>设置日志清理策略（默认delete）</p>
+</li>
+<li><p>有两种清理策略：</p>
+<ul>
+<li><p>日志删除：按照一定保留策略直接删除不符合条件的日志分段</p>
+<ul>
+<li>设置<code>log.cleanup.policy</code>为delete</li>
+</ul>
+</li>
+<li><p>日志压缩：针对每个消息的key进行整合，对于有相同key的不同value值，只保留最后一个版本</p>
+<ul>
+<li>设置<code>log.cleanup.policy</code>为compact，并且将<code>log.leaner.enable</code>设置为true（默认true）</li>
+</ul>
+</li>
+<li><p>可同时使用日志删除和日志压缩两种策略</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="日志删除"><a href="#日志删除" class="headerlink" title="日志删除"></a><strong>日志删除</strong></h2><ul>
+<li><p>Kafka的日志管理器中有一个专门的日志删除任务来周期性地检测和删除不符合<strong>保留条件</strong>的日志分段文件，周期通过 broker 端参数 <code>log.retention.check.interval.ms</code>来配置（默认300000，5分钟）</p>
+</li>
+<li><p>日志分段保留策略有3种：</p>
+<ul>
+<li><p>基于时间的保留策略：</p>
+<ul>
+<li><p>通过<code>log.retention.hours</code>、<code>log.retention.minutes</code>和<code>log.retention.ms</code>来配置超时清理阈值</p>
+<blockquote>
+<p>优先级ms&gt;minutes&gt;hours（默认log.retention.hours=168，7天） </p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>基于日志大小的保留策略：</p>
+<ul>
+<li>通过<code>log.retention.bytes</code>配置Log日志总大小阈值（默认-1，无穷大）</li>
+<li>通过<code>log.segment.bytes</code>配置日志分段文件大小阈值（默认1G）</li>
+</ul>
+</li>
+<li><p>基于日志起始偏移量的保留策略：</p>
+<ul>
+<li>某日志分段的<strong>下一个日志分段</strong>的起始偏移量baseOffset是否小于等于logStartOffset，若是则可以删除此日志分段</li>
+<li>logStartOffset 的值可以通过DeleteRecordsRequest请求（比如使用KafkaAdminClient的deleteRecords()方法、使用kafka-delete-records.sh脚本〉、日志的清理和截断等操作进行修改</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>删除日志分段时，首先会从Log对象中所维护日志分段的跳表中移出待删除分段，以保证没有线程对其进行读取，然后将对应文件加上.deleted后缀，最后由名为delete-file的延迟任务来删除文件</p>
+<ul>
+<li> Kafka 的每个日志对象中使用了 ConcurrentSkipListMap 来保存各个日志分段，每个日志分段的 baseOffset 作为 key</li>
+<li>删除任务延迟时间通过<code>file.delete.delay.ms</code>配置（默认60000，1分钟）</li>
+</ul>
+</li>
+</ul>
+<h2 id="日志压缩（Log-Compaction）"><a href="#日志压缩（Log-Compaction）" class="headerlink" title="日志压缩（Log Compaction）"></a><strong>日志压缩</strong>（Log Compaction）</h2><ul>
+<li><p>Log Compaction对于有相同key的不同value值，只保留最后一个版本。</p>
+</li>
+<li><p>每个日志目录下都有一个名为“cleaner-offset-checkpoint”的<strong>清理检查点文件</strong>，用来记录每个主题的每个分区中己清理的偏移量。通过清理检查点文件可以将 Log 分成两个部分。通过检查点cleaner checkpoint来划分出 一个己经清理过的clean部分和一个还未清理过的dirty部分。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20211123103357.png" alt="image-20211123103357404" style="zoom:80%;" />
+</li>
+<li><p>注意Log Compaction是针对key的，所以在使用时应注意每个消息的key值不为null。每个broker会启动<code>log.cleaner.thread</code>（默认1）个日志清理线程负责执行清理任务， 这些线程会选择<strong>“污浊率”</strong>最高的日志文件进行清理。</p>
+<blockquote>
+<p>污浊率：dirtyRatio = dirtyBytes / ( cleanBytes + dirtyBytes ) </p>
+</blockquote>
+</li>
+<li><p>为了防止日志不必要的频繁清理操作，使用参数<code>log.cleaner.min.cleanable.ratio</code>（默认0.5）来限定可进行清理操作的最小污浊率。 Kafka 中用于保存消费者消费位移的主题<strong>＿consumer_offsets使用的就是Log Compaction策略</strong></p>
+</li>
+<li><p>每个日志清理线程会使用一个名为<strong>“SkimpyOffsetMap”</strong>的对象来构建key与offset的映射关系的哈希表（dirty部分）。日志清理需要遍历两次日志文件，第一次遍历把每个 key 的哈希值和最后出现的offset都保存在 SkimpyOffsetMap 中，第二次遍历会检查每个消息是否符合保留条件，符合就保留下来，否则就会被清理.</p>
+</li>
+<li><p>墓碑消息（tombstone）：</p>
+<ul>
+<li>如果一条消息的key不为null，但是其value为null，那么此消息就是墓碑消息。</li>
+<li>日志清理线程发现墓碑消息时会先进行常规的清理，并保留墓碑消息一段时间。墓碑消息的保留条件是所在的日志分段的最近修改时间 lastModifiedTime大于deleteHorizonMs。deleteHorizonMs为clean部分中最后一个日志分段的最近修改时间减去保留阈值deleteRetionMs（通过 broker 端参数<code>log.cleaner.delete.retention.ms</code>配置，默认86400000，即24小时）</li>
+</ul>
+</li>
+<li><p>Log Compaction执行过后的日志分段的大小会比原先的日志分段的要小，为了防止出现太多的小文件，Kafka 在实际清理过程中并不对单个的日志分段进行单独清理，而是将日志文件 中 offset 从 0 至 firstUncleanableOffset 的所有日志分段进行分组，每个日志分段只属于一组 。</p>
+<ul>
+<li><strong>分组策略</strong>为: 按照日志分段的顺序遍历 ，每组中日志分段的占用空间大小之和不超过 segmentSize(可以通过 broker端参数 <code>log.segment.bytes</code> 设置，默认值为 1GB)，且对应的索引文件占用大小之和不超过 maxindexSize (可以通过 broker端参数 <code>log.index.interval.bytes</code>设置，默认值为 I0MB)。同一个组的多个日志分段清理过后，只会生成一个新的日志分段。</li>
+<li><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20211123103848.png" alt="image-20211123103847982" style="zoom:80%;" />
+
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="磁盘存储"><a href="#磁盘存储" class="headerlink" title="磁盘存储"></a>磁盘存储</h1><h2 id="页缓存（pagecache）"><a href="#页缓存（pagecache）" class="headerlink" title="页缓存（pagecache）"></a>页缓存（pagecache）</h2><ul>
+<li><p>页缓存是操作系统实现的一种主要的磁盘缓存，用来减少对磁盘I/O的操作。具体就是把磁盘中的数据缓存到内存中，把对磁盘的访问变成对内存的访问。</p>
+<ul>
+<li>读取：操作系统会先查看数据所在的页（page）是否在页缓存中，如果存在则直接返回，不存在则向磁盘发起读取请求并将读取的数据存入页缓存，之后再将数据返回。</li>
+<li>写入：查看数据所在的页（page）是否在页缓存中，存在则直接修改页缓存，不存在则在页缓存中添加相应的页再写入。被修改过的页变成了脏页，操作系统会在合适的时间把脏页数据写入磁盘以保持数据一致性。</li>
+</ul>
+</li>
+<li><p>Kafka大量使用了页缓存，这是实现高吞吐的重要因素之一。Kafka提供了同步刷盘及间断性强制刷盘的功能，但并不推荐使用。</p>
+</li>
+</ul>
+<h2 id="磁盘I-O流程"><a href="#磁盘I-O流程" class="headerlink" title="磁盘I/O流程"></a>磁盘I/O流程</h2><p>从编程角度而言，一般I/O场景有以下4种，他们的数据流为：</p>
+<ul>
+<li>用户调用标准C库进行I/O操作：用户程序buffer-&gt;C库标准IObuffer-&gt;文件系统页缓存-&gt;通过具体文件系统到磁盘</li>
+<li>用户调用文件I/O：用户程序buffer-&gt;文件系统页缓存-&gt;通过具体文件系统到磁盘</li>
+<li>用户打开文件时使用O_DIRECT，绕过页缓存直接写磁盘</li>
+<li>用户使用类似dd工具，使用direct参数，绕过系统cache与文件系统直接写磁盘</li>
+</ul>
+<p>最长链路数据流图示：</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20211123105825.png" alt="image-20211123105825407" style="zoom:80%;" />
+
+<p>IO请求处理：通用块层根据 1/0 请求构造一个或多个 bio 结构并提交给调度层；调度器将 bio 结构进行排序和合并组织成队列且确保读写操作尽可能理想: 将一个或多个进程的读操作合并到一起读，将一个或多个进程的写操作合并到一起写，尽可能变随机为顺序 (因为随机读写比顺序读写要慢)，读必须优先满足，而写也不能等太久</p>
+<blockquote>
+<p>针对不同应用场景，I/O调度策略也会影响I/O读写性能，目前Linux提供4中调度策略：NOOP、CFQ（默认）、DEADLINE、ANTICIPATORY。各调度算法的详细描述可查阅5.5.2节，这里不再赘述。</p>
+<p>此外，若想了解linux内核的磁盘io可参考<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/96391501">该篇博文</a></p>
+</blockquote>
+<h2 id="零拷贝（Zero-Copy）"><a href="#零拷贝（Zero-Copy）" class="headerlink" title="零拷贝（Zero-Copy）"></a>零拷贝（Zero-Copy）</h2><ul>
+<li><p>零拷贝是指将数据直接从磁盘文件复制到网卡设备中，而不需要经由应用程序之手。零拷贝大大提高了应用程序的性能，减少了内核和用户模式之间的上下文切换。 对 Linux 操作系统而言，零拷贝技术依赖于底层的sendfile()方法实现。对应于Java 语言，FileChannal.transferTo()的底层实现就是sendfile()。</p>
+</li>
+<li><p>零拷贝和非零拷贝对比</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20211123110541.png" alt="image-20211123110541773" style="zoom: 40%;" />
+</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://icbtbo.github.io/2021/11/22/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E6%97%A5%E5%BF%97%E5%AD%98%E5%82%A8/">https://icbtbo.github.io/2021/11/22/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E6%97%A5%E5%BF%97%E5%AD%98%E5%82%A8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://icbtbo.github.io" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6/">消息中间件</a><a class="post-meta__tags" href="/tags/kafka/">kafka</a></div><div class="post_share"><div class="social-share" data-image="/img/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/11/24/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E6%B7%B1%E5%85%A5%E6%9C%8D%E5%8A%A1%E7%AB%AF/"><img class="prev-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">kafka进阶篇：深入服务端</div></div></a></div><div class="next-post pull-right"><a href="/2021/11/16/kafka/kafka%E5%9F%BA%E7%A1%80%E7%AF%87%EF%BC%9A%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84%EF%BC%8C%E7%94%9F%E4%BA%A7%E8%80%85%EF%BC%8C%E6%B6%88%E8%B4%B9%E8%80%85/"><img class="next-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">kafka基础篇：体系架构，生产者，消费者</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/11/25/kafka/kafka进阶篇：可靠性探究、应用、监控和高级应用/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-25</div><div class="title">kafka进阶篇：可靠性探究、应用、监控和高级应用</div></div></a></div><div><a href="/2021/11/24/kafka/kafka进阶篇：深入客户端/" title="kafka进阶篇：深入客户端"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-24</div><div class="title">kafka进阶篇：深入客户端</div></div></a></div><div><a href="/2021/11/24/kafka/kafka进阶篇：深入服务端/" title="kafka进阶篇：深入服务端"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-24</div><div class="title">kafka进阶篇：深入服务端</div></div></a></div><div><a href="/2021/11/16/kafka/kafka基础篇：体系架构，生产者，消费者/" title="kafka基础篇：体系架构，生产者，消费者"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-16</div><div class="title">kafka基础篇：体系架构，生产者，消费者</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95%E5%B8%83%E5%B1%80"><span class="toc-number">1.</span> <span class="toc-text">文件目录布局</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%A0%BC%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">日志格式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E5%8E%8B%E7%BC%A9"><span class="toc-number">2.1.</span> <span class="toc-text">消息压缩</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#v2%E7%89%88%E6%9C%AC%E6%97%A5%E5%BF%97%E6%A0%BC%E5%BC%8F"><span class="toc-number">2.2.</span> <span class="toc-text">v2版本日志格式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E7%B4%A2%E5%BC%95"><span class="toc-number">3.</span> <span class="toc-text">日志索引</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%8F%E7%A7%BB%E9%87%8F%E7%B4%A2%E5%BC%95%EF%BC%88-index%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">偏移量索引（.index）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E6%88%B3%E7%B4%A2%E5%BC%95%EF%BC%88-timeindex%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">时间戳索引（.timeindex）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%B8%85%E7%90%86"><span class="toc-number">4.</span> <span class="toc-text">日志清理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%88%A0%E9%99%A4"><span class="toc-number">4.1.</span> <span class="toc-text">日志删除</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%8E%8B%E7%BC%A9%EF%BC%88Log-Compaction%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">日志压缩（Log Compaction）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A3%81%E7%9B%98%E5%AD%98%E5%82%A8"><span class="toc-number">5.</span> <span class="toc-text">磁盘存储</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E7%BC%93%E5%AD%98%EF%BC%88pagecache%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">页缓存（pagecache）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A3%81%E7%9B%98I-O%E6%B5%81%E7%A8%8B"><span class="toc-number">5.2.</span> <span class="toc-text">磁盘I&#x2F;O流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%B6%E6%8B%B7%E8%B4%9D%EF%BC%88Zero-Copy%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">零拷贝（Zero-Copy）</span></a></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:独立功能的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现">Redis设计与实现:独立功能的实现</a><time datetime="2022-01-05T12:59:07.000Z" title="发表于 2022-01-05 20:59:07">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:多机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现">Redis设计与实现:多机数据库的实现</a><time datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:单机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现">Redis设计与实现:单机数据库的实现</a><time datetime="2022-01-04T06:38:05.000Z" title="发表于 2022-01-04 14:38:05">2022-01-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:数据结构与对象"/></a><div class="content"><a class="title" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象">Redis设计与实现:数据结构与对象</a><time datetime="2021-12-18T09:16:04.000Z" title="发表于 2021-12-18 17:16:04">2021-12-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kafka进阶篇：可靠性探究、应用、监控和高级应用"/></a><div class="content"><a class="title" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用">kafka进阶篇：可靠性探究、应用、监控和高级应用</a><time datetime="2021-11-25T01:59:17.000Z" title="发表于 2021-11-25 09:59:17">2021-11-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'pLWJLVgdxc6WLcEaFgEr2tQ2-gzGzoHsz',
+      appKey: 'OAmeyAUV6TdXoX5n1hSX4ELm',
+      placeholder: '请留下你的小脚印～',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      master: 'f94877d77182a6f9068fc12b5545e1f5',
+      tagMeta: ["博主","小伙伴","访客"],
+      friends: ["52dc4d80afb3aeab1d0deab1aa45a7b5","fd99ca470e7b5e8e2b4f76d6ed26d6cf"]
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/gh/HCLonely/Valine@latest/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

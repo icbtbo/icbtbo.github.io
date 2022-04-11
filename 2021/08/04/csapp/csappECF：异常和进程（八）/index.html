@@ -1,0 +1,402 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>csappECF：异常和进程（八） | sjc的搬砖小屋</title><meta name="keywords" content="异常,进程控制"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="介绍了异常的概念以及异常的分类；介绍了ECF对于进程控制的作用。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="csappECF：异常和进程（八）">
+<meta property="og:url" content="https://icbtbo.github.io/2021/08/04/csapp/csappECF%EF%BC%9A%E5%BC%82%E5%B8%B8%E5%92%8C%E8%BF%9B%E7%A8%8B%EF%BC%88%E5%85%AB%EF%BC%89/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="介绍了异常的概念以及异常的分类；介绍了ECF对于进程控制的作用。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://icbtbo.github.io/img/default_bg.png">
+<meta property="article:published_time" content="2021-08-04T06:38:26.000Z">
+<meta property="article:modified_time" content="2021-08-04T06:50:29.074Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="异常">
+<meta property="article:tag" content="进程控制">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://icbtbo.github.io/img/default_bg.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="https://icbtbo.github.io/2021/08/04/csapp/csappECF%EF%BC%9A%E5%BC%82%E5%B8%B8%E5%92%8C%E8%BF%9B%E7%A8%8B%EF%BC%88%E5%85%AB%EF%BC%89/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-08-04 14:50:29'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/default_bg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">csappECF：异常和进程（八）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-08-04T06:38:26.000Z" title="发表于 2021-08-04 14:38:26">2021-08-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-08-04T06:50:29.074Z" title="更新于 2021-08-04 14:50:29">2021-08-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E3%80%8A%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E3%80%8B/">《深入理解计算机系统》</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>学习ECF的意义在于：</p>
+<ul>
+<li>将有助于理解重要的系统概念，ECF是操作系统用来实现I/O、进程和虚拟内存的基本机制。</li>
+<li>将有助于理解应用程序是如何与操作系统交互的，应用程序通过<strong>系统调用（System Call）</strong>的ECF形式，向操作系统请求服务。</li>
+<li>将有助于理解并发机制</li>
+<li>将有助于理解软件异常的工作方式</li>
+</ul>
+</blockquote>
+<h1 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>在处理器中，状态被编码为不同的位和信号，而状态变化成为<strong>事件（Event）</strong>。当出现事件时，<strong>异常（Exception）</strong>会将控制权转移到操作系统内核，来响应处理器状态中的某些变化，由此形成了控制流中的突变。异常位于硬件和操作系统交接的部分，通过硬件修改<code>%rip</code>来实现控制转移，而由于该异常而执行的代码是由操作系统内核设置和确定的，所以异常一部分由硬件实现，一部分由软件实现。</p>
+<p>系统为每种类型的异常都分配了一个唯一的非负整数的<strong>异常号（Exception Number）</strong>，有些异常号由处理器设计者分配，有些异常号由操作系统内核设计者分配，分别用来表示不同层次的异常。在系统启动时，操作系统会分配和初始化一张称为<strong>异常表（Exception Table）</strong>的跳转表，其中第k个表项包含专门处理异常号为k的异常的<strong>异常处理程序（Exception Handler)</strong></p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803212109.png" alt="image-20210803212109388" style="zoom:67%;" />
+
+<p>在跳转到异常处理程序之前，根据异常的类型，会将不同的返回地址压入栈中，要么返回到事件发生时的地址，要么返回到事件发生时的下一条指令地址。此外，处理器会将一些额外的处理器状态压入栈中，使得当处理器返回时，能从栈中返回中断程序原始的状态。</p>
+<p><strong>注意：</strong>如果控制从用户程序转移到内核，则这些数据都保存在内核栈中，而不是用户栈。此外，异常处理程序运行在内核模式下，使得它们对所有系统资源都有完全的访问权限。</p>
+<p>当异常处理运行完成时，将执行“从中断返回”指令，根据栈中的数据确定返回地址和恢复中断前程序的状态，如果引起异常中断的是用户程序，就将状态恢复为用户模式。</p>
+<h2 id="异常类型"><a href="#异常类型" class="headerlink" title="异常类型"></a>异常类型</h2><p>异常可以分成以下<strong>四种类型</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803212540.jpg" alt="img"></p>
+<p>其中，异步异常是由于处理器外部发生的状态变化而引起的，而同步异常指的是当前指令运行的结果，这类指令也称为<strong>故障指令（Faulting Instruction）</strong>。</p>
+<p>在x86-64中，一共有256种不同的异常，其中0<del>31号异常是由Intel架构师定义的异常，32</del>255号异常是由操作系统定义的中断和陷阱。几个比较特殊的如下所示</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803212603.jpg" alt="img" style="zoom:67%;" />
+
+<h3 id="中断异常"><a href="#中断异常" class="headerlink" title="中断异常"></a>中断异常</h3><p>中断异常是由I/O设备的信号触发的，不是由指令造成的。在I/O设备中，通过向处理器芯片上的中断引脚发送信号，将标识引起中断的设备的异常号放在系统总线上，来触发中断。则当当前指令执行完后，处理器发现中断引脚的电压变高，就从系统总线中获取异常号，然后调用对应的<strong>中断处理程序（Interrupt Handler）</strong>，执行完毕后返回执行下一条指令。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803212620.jpg" alt="img"></p>
+<p>中断的一个常见例子是<strong>定时器中断（Timer Interrupt）</strong>。所有系统都有一个内置计时器，每隔几毫秒就会关闭一次，此时就将中断引脚置为高电平，并且有一个特殊的异常编号用于定时器中断，由此来使得内核再次获得对系统的控制，再由内核决定要做什么，否则用户程序可能会陷入无限循环永远运行，无法让操作系统获得控制权。</p>
+<p>其次来自外部设备的<strong>I/O中断（I/O Interrupt）</strong>也是一个常见的例子。</p>
+<h3 id="陷阱异常"><a href="#陷阱异常" class="headerlink" title="陷阱异常"></a>陷阱异常</h3><p>操作系统内核为程序提供各种服务，但是你的程序没有直接访问内核的权限，无法调用内核函数，无法访问内核数据，因此在用户程序和内核之间提供一个类似函数的接口，称为<strong>系统调用</strong>（<code>syscall n</code>指令），用户会通过执行系统调用来向内核请求服务，比如读取文件（read）、创建新进程（fork）、加载程序（execve）或终止程序（exit），所以陷阱异常是一个有意的异常。处理器会根据<code>syscall n</code>的参数，调用适当的内核程序，然后再将控制权返回给调用程序。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803212642.jpg" alt="img"></p>
+<p><strong>注意：</strong></p>
+<ul>
+<li>从程序员角度来看，系统调用和函数调用一样，但是两者存在巨大的区别。系统调用运行在内核模式，而函数调用运行在用户模式。</li>
+<li>系统调用是陷阱的一种，陷阱是同步异常的一种，要分清层次关系。</li>
+</ul>
+<p>通常每个系统调用都有唯一一个对应的整数号，对应于一个到内核中跳转表的偏移量。</p>
+<h3 id="故障异常"><a href="#故障异常" class="headerlink" title="故障异常"></a>故障异常</h3><p>故障异常由错误引起的，但是能被故障处理程序修正。当发生故障时，处理器将控制转移给故障处理程序，如果处理程序能修复故障，则重新执行引发中断的指令，否则处理程序返回到内核的<code>abort</code>例程，终止应用程序。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803212927.png" alt="image-20210803212927123" style="zoom:67%;" />
+
+<p>当应用尝试除以0时，会出现除法错误（异常0），Unix不会尝试从除法错误中恢复，而是直接终止程序，而Linux shell通常会吧除法错误报告为<strong>浮点异常（Floating Exception）</strong>。造成一般保护故障（异常13）的原因有很多，通常是因为程序引用了一个未定义的虚拟内存区域，或者程序试图写一个只读文件，Linux不会尝试恢复这类故障，shell中会将其报告为<strong>段故障（Segmentation Fault）</strong>。遇到缺页异常（异常14），处理器会将适当的磁盘上的虚拟内存的一个页面映射到物理内存的一个页面，然后重新执行产生故障的指令。</p>
+<h3 id="终止异常"><a href="#终止异常" class="headerlink" title="终止异常"></a>终止异常</h3><p>终止异常通常是不可修复的错误造成的，通常是硬件错误，处理程序会直接将控制返回一个<code>abort</code>例程，终止应用程序。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803212955.png" alt="image-20210803212955111" style="zoom:67%;" />
+
+<p>比如在x86-64中，机器检查异常（异常18）是在导致故障的指令中检测到致命的硬件错误。</p>
+<h1 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h1><p>异常是允许操作系统内核提供<strong>进程（Process）</strong>概念的基本构造块。</p>
+<p>进程就是一个执行中程序的实例，每个程序都会运行在某个由内核维护的进程<strong>上下文（Context）</strong>中，其中包含了保证程序正确运行所需的状态，包括存放在内存中的程序的代码和数据、栈、通用目的寄存器的内容、程序计数器、环境变量等等。当我们执行可执行文件时，shell会先创建一个新的进程，给程序提供自己的上下文，然后再在该进程的上下文中运行这个可执行目标文件。</p>
+<p><strong>注意：</strong>进程与程序是不同的，程序可以保存在不同地方，比如保存为C文件的文本，保存为<code>.text</code>的二进制文件，可以作为已加载到内存中的字节存在，而进程指的是正在运行的程序的实例。</p>
+<p>而进程的出现，给我们提供了以下<strong>假象：</strong></p>
+<ul>
+<li>我们的程序是当前唯一在系统运行的程序</li>
+<li>我们的程序独占地使用处理器和内存</li>
+<li>处理器好像无间断地执行我们程序中的指令</li>
+<li>我们程序中的代码和数据好像是系统内存中唯一的对象</li>
+</ul>
+<p>我们这里只讨论处理器和内存系统的假象。</p>
+<h3 id="处理器"><a href="#处理器" class="headerlink" title="处理器"></a>处理器</h3><p>当我们单步执行程序时，可以看到一系列PC值，这个PC序列就称为<strong>逻辑控制流</strong>，简称<strong>逻辑流</strong>。<strong>注意：</strong>之前的控制流值的是物理控制流，是在系统层次上的指令地址序列，而逻辑控制流是在程序级别上的，所以物理控制流包含逻辑控制流。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803214404.jpg" alt="img" style="zoom:80%;" />
+
+<p>如上图所示，运行了3个进程，每个进程上下文中的PC值序列就是对应的逻辑流，就是上图中的黑色竖线，而物理控制流就是所有竖线的合并。所以处理器中的物理控制流被分成了3个逻辑控制流，每个进程有一个。并且可以看出，3个逻辑流是交错进行的，只有轮到了进程的逻辑流，才表示该进程在使用处理器，所以进程是轮流使用处理器的，当进程执行了一部分逻辑流时，就会被别的进程<strong>抢占（Preempted）</strong>。但是从当个进程的角度来看，它的逻辑流是连续的，意味着提供了独占处理器的假象，只是指令执行过程中有时会出现停顿，那时候就是出现了抢占。</p>
+<p>这里将多个进程轮流运行的概念称为<strong>多任务（Multitasking）</strong>，将进程每次执行一部分逻辑流的时间称为<strong>时间片（Time Slice）</strong>，则多任务也叫<strong>时间分片（Time Slicing）</strong>。比如进程A就由两个时间片组成。</p>
+<p>当逻辑流X在逻辑流Y开始之后和Y结束之前运行，或逻辑流Y在逻辑流X开始之后和X结束之前运行，则称这两个流为<strong>并发流（Concurrent Flow）</strong>。比如进程A和B是并发流，进程A和C也是并发流。我们将这种多个流并发地执行的现象称为<strong>并发（Concurrency）</strong>。</p>
+<p><strong>注意：</strong>并发流的思想与流运行的处理器数目或计算机数目无关，只和它们运行时间是否重叠有关。但是，如果两个并发流是在不同的处理器核或计算机上运行的，则称它们为并行流<strong>（Parallel Flow）</strong>。</p>
+<blockquote>
+<p>两个进程的逻辑流在时间上重叠，则成为并发流，如果并发流在不同核或计算机上运行，则成为并行流。并行流属于并发流，区别只在于是否在同一处理器上运行。</p>
+</blockquote>
+<h3 id="内存系统"><a href="#内存系统" class="headerlink" title="内存系统"></a>内存系统</h3><p>进程为每个程序提供了他自己的<strong>私有地址空间</strong>，其他进程不能读或写该地址空间中的内存字节。如下是一个私有地址空间的架构</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803214421.jpg" alt="img" style="zoom:80%;" />
+
+<h3 id="用户模式和内核模式"><a href="#用户模式和内核模式" class="headerlink" title="用户模式和内核模式"></a>用户模式和内核模式</h3><p>处理器为进程提供了两种模式，用户模式和内核模式，处理器通过某个控制寄存器的<strong>模式位（Mode Bit）</strong>来进行切换</p>
+<ul>
+<li><strong>内核模式：</strong>当处理器设置了模式位时，为内核模式。此时进程可以执行指令集中的所有指令，并且可以访问系统中的任何内存位置。</li>
+<li><strong>用户模式：</strong>当处理器不设置模式位时，为用户模式，是进程的初始模式。此时进程不能执行<strong>特权指令（Privileged Instruction）</strong>，比如停止处理器、改变模式位或者发起I/O操作，也不能引用内核区域中的指令和数据，只能通过系统调用接口来间接访问。</li>
+</ul>
+<p>进程初始是为用户模式，当出现异常（中断、陷阱、故障）时会变为内核模式，并跳转到异常处理程序中，当返回应用程序时，又会改回用户模式。</p>
+<p>为了处于用户模式的进程能访问内和数据结构的内容，Linux提供了<code>/proc</code>文件系统。</p>
+<h3 id="上下文切换"><a href="#上下文切换" class="headerlink" title="上下文切换"></a>上下文切换</h3><p>我们知道内核为每个进程维护了一个上下文，包含了进程所需的所有信息。当进程执行出现中断或某些异常时，内核中的<strong>调度器（Scheduler）</strong>会决定抢占当前进程，并重新开始一个之前被抢断了的进程，此时就需要进行<strong>上下文切换（Context Switch）</strong>，将当前进程的上下切换成要运行的进程的上下文，比如地址空间和寄存器的变化。主要包含以下步骤：</p>
+<ul>
+<li>保存当前进程的上下文，方便过后再进行调度</li>
+<li>恢复之前某个被抢占进程的上下文</li>
+<li>将控制传递给这个新恢复的进程</li>
+</ul>
+<p><strong>注意：</strong>上下文切换是较高层次的异常控制流，建立在之前低层次异常机制之上。</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803214549.jpg" alt="img" style="zoom:80%;" />
+
+<p>比如以上过程中，首先内核开始执行进程A，处于用户模式。当进程A调用了<code>read</code>系统调用时，内核中的陷阱处理程序请求来自磁盘控制器的DMA传输，由于磁盘读取数据比较耗时，所以调度程序决定运行进程B，就会重新指定地址空间，完成进程B的寄存器加载，然后将控制权转移到进程B，进程B就从中断处继续运行，内核就完成了从进程A切换到进程B并开始执行进程B。当磁盘控制器完成从磁盘到内存的数据传输后，磁盘会发起中断，此时内核判断进程B已运行了足够长的时间了，就会从进程B切换到进程A，直到下次异常出现。</p>
+<p><strong>注意：</strong>进程是由内存中共享的内核进行管理的，内核并不是独立的进程，而是作为某些现有进程的一部分，始终位于地址空间顶部的代码，当出现异常时会进行执行。</p>
+<h1 id="进程控制"><a href="#进程控制" class="headerlink" title="进程控制"></a>进程控制</h1><p>现在Linux提供许多函数，可以从用户程序调用操作进程，这个操作进程的过程称为<strong>进程控制（Process Control）</strong>。这些函数主要通过系统级函数的形式来进行系统调用，如果出现错误，通常会返回-1，然后设置全局变量<code>errno</code>来指明原因，所以我们必须检查这些函数的返回值，通常可以对这些函数进行封装，比如</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">unix_error</span><span class="params">(<span class="keyword">char</span> *msg)</span></span>&#123;</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;%s: %s\n&quot;</span>, msg, strerror(errno));</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">pid_t</span> <span class="title">Fork</span><span class="params">(<span class="keyword">void</span>)</span></span>&#123;</span><br><span class="line">  <span class="keyword">pid_t</span> pid;</span><br><span class="line">  <span class="keyword">if</span>((pid = fork()) &lt; <span class="number">0</span>)</span><br><span class="line">    unix_error(<span class="string">&quot;Fork error&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> pid;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="获取进程ID"><a href="#获取进程ID" class="headerlink" title="获取进程ID"></a>获取进程ID</h3><p>每个进程都有一个唯一的正数<strong>进程ID（PID）</strong>，可以通过<code>getpid</code>函数返回当前进程的PID，可以通过<code>getppid</code>函数返回创建当前进程的父进程PID。类型都为<code>pid_t</code>，Linux系统中在<code>type.h</code>中定义为<code>int</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">pid_t</span> <span class="title">getpid</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">pid_t</span> <span class="title">getppid</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="进程状态"><a href="#进程状态" class="headerlink" title="进程状态"></a>进程状态</h3><p>进程会处于以下三种状态之一：</p>
+<ul>
+<li><strong>运行：</strong>进程要么在CPU上执行，要么在等待被执行且最终会被内核调度。即被抢占的进程也属于运行状态。</li>
+<li><strong>停止：</strong>当进程收到<code>SIGSTOP</code>、<code>SIGTSTP</code>、<code>SIGTTIN</code>或<code>SIGTTOU</code>信号时，进程的执行被<strong>挂起（Suspended）</strong>且不会被调度，直到收到<code>SIGCONT</code>信号，进程才会运行。即进程暂时不会被调度，但是还有可能被调度。</li>
+<li><strong>终止：</strong>进程被永久停止了，主要<strong>原因在于：</strong>进程收到了终止进程的信号；从主程序返回<code>return</code>；调用<code>exit</code>函数。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">exit</span><span class="params">(<span class="keyword">int</span> status)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>status</code>表示进程的退出状态，等价于<code>return status;</code>。</p>
+<h3 id="创建子进程"><a href="#创建子进程" class="headerlink" title="创建子进程"></a>创建子进程</h3><p>父进程通过<code>fork</code>函数创建一个子进程</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">pid_t</span> <span class="title">fork</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>当调用<code>fork</code>函数时，就立即以当前进程作为父进程，创建一个新的子进程，具有以下<strong>特点：</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803215044.jpg" alt="img"></p>
+<ul>
+<li>两个进程具有相同的地址空间，意味着两个进程具有相同的用户栈、局部变量值、堆、全局变量和代码。但是两者的地址空间又是独立的，所以<code>fork</code>函数之后对两个进程的操作都是独立的。即父子进程具有执行<code>fork</code>函数之前相同的设置，而执行完<code>fork</code>函数后，两个进程就是并发独立的了。</li>
+<li>子进程还获得与父进程任何打开文件描述符相同的副本，即子进程可以读写父进程打开的任何文件。</li>
+<li><code>fork</code>函数会有两个返回值——父进程会返回子进程的PID，而子进程会返回0。所以我们可以通过<code>fork</code>函数的返回值判断当前所处的进程，如果不加以区分，则父进程和子进程会执行后续相同的代码。</li>
+</ul>
+<p><strong>例1：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> x = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">pid_t</span> pid;</span><br><span class="line">  </span><br><span class="line">  pid = Fork();</span><br><span class="line">  <span class="keyword">if</span>(pid == <span class="number">0</span>)&#123; <span class="comment">//处于子进程中</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Child%d : x=%d\n&quot;</span>,getpid(), ++x);</span><br><span class="line">  &#125;<span class="keyword">else</span>&#123; <span class="comment">//处于父进程中</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;parent%d : x=%d\n&quot;</span>, getpid(), --x);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里在父进程中的<code>x=0</code>，在子进程中的结果为<code>x=2</code>，由于这两个进程是并发的，所以无法确定这两条输出哪条先显示。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803215054.jpg" alt="img"></p>
+<p><strong>例2：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">  Fork();</span><br><span class="line">  Fork();</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;hello\n&quot;</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803215107.jpg" alt="img"></p>
+<p><strong>注意：</strong>有<code>fork</code>存在的程序，最好画出进程图，进程图的全排列是所有可能出现的结果。</p>
+<h3 id="回收子进程"><a href="#回收子进程" class="headerlink" title="回收子进程"></a>回收子进程</h3><p>当子进程终止时，内核会一直保持它的状态直到它被父进程<strong>回收（Reaped）</strong>，因为父进程可能想知道子进程的退出状态，这类进程称为<strong>僵死进程（Zombie）</strong>，仍然消耗系统的内存资源。当父进程回收僵死进程时，内核就会将子进程的退出状态返回给父进程，并抛弃僵死进程。有一个特殊的进程<strong>init进程</strong>，其PID为1，是所有进程的祖先。如果父进程终止了，则由init进程接管它所有的子进程，并回收它的僵死进程。</p>
+<p><strong>注意：</strong>如果父进程没有对子进程进行回收，则子进程会成为僵死进程。子进程可以自己独立运行，需要显示进行终止。</p>
+<p>我们可通过调用以下函数来等待子进程的终止或停止，父进程会得到被回收的子进程PID，且内核会删除僵死进程</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">pid_t</span> <span class="title">waitpid</span><span class="params">(<span class="keyword">pid_t</span> pid, <span class="keyword">int</span> *statusp, <span class="keyword">int</span> options)</span></span>; </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>等待集合<code>pid</code></strong></p>
+</li>
+<li><ul>
+<li>如果<code>pid&gt;0</code>，则等待集合就是一个单独的子进程</li>
+<li>如果<code>pid=-1</code>，则等待集合就是该进程的所有子进程</li>
+<li><strong>注意：</strong>当父进程创造了许多子进程，这里通过<code>pid=-1</code>进行回收时，子程序的回收顺序是不确定的，并不会按照父进程生成子进程的顺序进行回收。可通过按顺序保存子进程的PID，然后按顺序指定<code>pid</code>参数来消除这种不确定性。</li>
+</ul>
+</li>
+<li><p><strong>等待行为<code>options</code></strong></p>
+</li>
+<li><ul>
+<li>**<code>0</code>**：默认选项，则会挂起当前进程，直到等待集合中的一个子进程终止，则函数返回该子进程的PID。此时，已终止的子进程已被回收。</li>
+<li><strong><code>WNOHANG</code>：</strong>如果等待子进程终止的同时还向做其他工作，该选项会立即返回，如果子进程终止，则返回该子进程的PID，否则返回0。</li>
+<li><strong><code>WUNTRACED</code>：</strong>当子进程被终止或暂停时，都会返回。</li>
+<li><strong><code>WCONTINUED</code>：</strong>挂起当前进程，知道等待集合中一个正在运行的子进程被终止，或停止的子进程收到<code>SIGCONT</code>信号重新开始运行。</li>
+<li><strong>注意：</strong>这些选项可通过<code>|</code>合并。</li>
+</ul>
+</li>
+<li><p>如果<code>statusp</code>非空，则<code>waitpid</code>函数会将子进程的状态信息放在<code>statusp</code>中，可通过<code>wait.h</code>中定义的宏进行解析</p>
+</li>
+<li><ul>
+<li><strong><code>WIFEXITED(statusp)</code>：</strong>如果子进程通过调用<code>exit</code>或<code>return</code>正常终止，则返回真。此时可通过<code>WEXITSTATUS(statusp)</code>获得退出状态。</li>
+<li><strong><code>WIFSIGNALED(status)</code>：</strong>如果子进程是因为一个未捕获的信号终止的，则返回真。此时可通过<code>WTERMSIG(statusp)</code>获得该信号的编号。</li>
+<li><strong><code>WIFSTOPPED(statusp)</code>：</strong>如果引起函数返回的子进程是停止的，则返回真。此时可通过<code>WSTOPSIG(statusp)</code>获得引起子进程停止的信号编号。</li>
+<li><strong><code>WIFCONTINUED(statusp)</code>：</strong>如果子进程收到<code>SIGCONT</code>信号重新运行，则返回真。</li>
+</ul>
+</li>
+<li><p>如果当前进程没有子进程，则<code>waitpid</code>返回-1，并设置<code>errno</code>为<code>ECHILD</code>，如果<code>waitpid</code>函数被信号中断，则返回-1，并设置<code>errno</code>为<code>EINTR</code>。否则返回被回收的子进程PID。</p>
+</li>
+</ul>
+<p><strong>注意：</strong> <code>waitpid</code>通过设置<code>options</code>来决定是否回收停止的子进程。并且能通过<code>statusp</code>来判断进程终止或停止的原因。</p>
+<p>有个简化的<code>waitpid</code>函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">pid_t</span> <span class="title">wait</span><span class="params">(<span class="keyword">int</span> *statusp)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>调用<code>wait(&amp;status)</code>等价于调用<code>waitpid(-1, &amp;status, 0)</code>。</p>
+<p><strong>注意：</strong>当调用<code>waitpid</code>函数之前，就有子进程被终止或停止，一调用<code>waitpid</code>函数就会马上将该子进程回收。</p>
+<h3 id="休眠进程"><a href="#休眠进程" class="headerlink" title="休眠进程"></a>休眠进程</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">sleep</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> secs)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pause</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>函数<code>sleep</code>将进程挂起一段时间，而该函数的返回值为剩下的休眠时间。</p>
+<p>函数<code>pause</code>将进程挂起，直到该进程收到一个信号。</p>
+<h3 id="加载并运行程序"><a href="#加载并运行程序" class="headerlink" title="加载并运行程序"></a>加载并运行程序</h3><p><code>execve</code>函数可在当前进程的上下文中加载并运行一个程序</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">execve</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *filename, <span class="keyword">const</span> <span class="keyword">char</span> *argv[], <span class="keyword">const</span> <span class="keyword">char</span> *envp[])</span></span>; </span><br></pre></td></tr></table></figure>
+
+<p><code>execve</code>函数加载并运行<code>filename</code>可执行目标文件，参数列表<code>argv</code>和环境列表<code>envp</code>是以<code>NULL</code>结尾的字符串指针数组，其中<code>argv[0]</code>为文件名。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803215956.jpg" alt="img"></p>
+<p>调用<code>exevec</code>函数其实就是调用加载器，则加载器会在可执行目标文件<code>filename</code>的指导下，将文件中的内容复制到代码段和数据段，再调用<code>_libc_start_main</code>来初始化执行环境，调用<code>main</code>函数，<code>main</code>函数的函数原型如下所示</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[], <span class="keyword">char</span> *envp[])</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>argc</code>为参数数目，<code>argv</code>为参数列表，<code>envp</code>为环境列表。其用户栈的架构如下所示</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210803220006.jpg" alt="img" style="zoom:80%;" />
+
+<p><strong>注意：</strong>可以通过全局变量<code>environ</code>来获得环境列表。</p>
+<p>这里还有一些函数用来对环境变量进行操作</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">getenv</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *name)</span></span>; <span class="comment">//获得名字为name的环境值</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setenv</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> <span class="keyword">char</span> *newvalue, <span class="keyword">int</span> overwrite)</span></span>; <span class="comment">//对环境值进行修改</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">unsetenv</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *name)</span></span>; <span class="comment">// 删除环境变量</span></span><br></pre></td></tr></table></figure>
+
+<p><code>fork</code>函数和<code>execve</code>区别：</p>
+<ul>
+<li><code>fork</code>函数新建一个不同PID的子进程，具有和父进程相同的上下文，是父进程的复制品，运行相同的代码、程序和变量，就是程序不变，而在不同进程。而<code>execve</code>函数保持PID不变，在当前进程的上下文中加载并运行一个新程序，会覆盖当前进程的地址空间，并继承调用<code>execve</code>函数时已打开的所有文件描述符，就是保持进程不变，但是运行完全不同的程序。</li>
+<li><code>fork</code>函数调用一次返回两次，而<code>execve</code>函数调用后，只有出现错误才会返回到调用程序。</li>
+<li>当你想要创建并发服务器时，可以通过<code>fork</code>函数创建多个服务器副本，可以运行多个相同代码。</li>
+</ul>
+<p>想要保持当前进行运行的情况下，运行另一个程序，可以先通过<code>fork</code>新建一个进程，然后在子进程中用<code>execve</code>执行另一个程序，此时在父进程就运行原来的程序，而在子进程中就运行另一个程序。</p>
+<p><strong>例子：</strong>我们想要在当前环境中，在子进程中运行<code>/bin/ls -lt /usr/include</code></p>
+<p>首先可以设置参数<code>argv</code>和<code>envp</code></p>
+<p><img src="https://pic4.zhimg.com/80/v2-51ffd017f0a3b52662f8736a9afcee5f_720w.jpg" alt="img"></p>
+<p>然后调用以下代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ((pid = Fork()) == <span class="number">0</span>) &#123;  <span class="comment">//在子进程中运行</span></span><br><span class="line">  <span class="keyword">if</span> (execve(myargv[<span class="number">0</span>], myargv, environ) &lt; <span class="number">0</span>) &#123;  <span class="comment">//这里直接用全局变量environ，表示在当前环境中运行</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%s: Command not found.\n&quot;</span>, myargv[<span class="number">0</span>]);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">1</span>); </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://icbtbo.github.io/2021/08/04/csapp/csappECF%EF%BC%9A%E5%BC%82%E5%B8%B8%E5%92%8C%E8%BF%9B%E7%A8%8B%EF%BC%88%E5%85%AB%EF%BC%89/">https://icbtbo.github.io/2021/08/04/csapp/csappECF%EF%BC%9A%E5%BC%82%E5%B8%B8%E5%92%8C%E8%BF%9B%E7%A8%8B%EF%BC%88%E5%85%AB%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://icbtbo.github.io" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%BC%82%E5%B8%B8/">异常</a><a class="post-meta__tags" href="/tags/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/">进程控制</a></div><div class="post_share"><div class="social-share" data-image="/img/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/08/04/csapp/csappECF%EF%BC%9A%E4%BF%A1%E5%8F%B7%E5%92%8C%E9%9D%9E%E6%9C%AC%E5%9C%B0%E8%B7%B3%E8%BD%AC%EF%BC%88%E5%85%AB%EF%BC%89/"><img class="prev-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">csappECF：信号和非本地跳转（八）</div></div></a></div><div class="next-post pull-right"><a href="/2021/07/31/csapp/csapp%E4%BC%98%E5%8C%96%E7%A8%8B%E5%BA%8F%E6%80%A7%E8%83%BD%EF%BC%88%E4%BA%94%EF%BC%89/"><img class="next-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">csapp优化程序性能（五）</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8"><span class="toc-number">1.</span> <span class="toc-text">异常</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.2.</span> <span class="toc-text">异常类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E6%96%AD%E5%BC%82%E5%B8%B8"><span class="toc-number">1.2.1.</span> <span class="toc-text">中断异常</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%B7%E9%98%B1%E5%BC%82%E5%B8%B8"><span class="toc-number">1.2.2.</span> <span class="toc-text">陷阱异常</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E5%BC%82%E5%B8%B8"><span class="toc-number">1.2.3.</span> <span class="toc-text">故障异常</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%88%E6%AD%A2%E5%BC%82%E5%B8%B8"><span class="toc-number">1.2.4.</span> <span class="toc-text">终止异常</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">进程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E5%99%A8"><span class="toc-number">2.0.1.</span> <span class="toc-text">处理器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.0.2.</span> <span class="toc-text">内存系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%A8%A1%E5%BC%8F%E5%92%8C%E5%86%85%E6%A0%B8%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.0.3.</span> <span class="toc-text">用户模式和内核模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E5%88%87%E6%8D%A2"><span class="toc-number">2.0.4.</span> <span class="toc-text">上下文切换</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6"><span class="toc-number">3.</span> <span class="toc-text">进程控制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E8%BF%9B%E7%A8%8BID"><span class="toc-number">3.0.1.</span> <span class="toc-text">获取进程ID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E7%8A%B6%E6%80%81"><span class="toc-number">3.0.2.</span> <span class="toc-text">进程状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E5%AD%90%E8%BF%9B%E7%A8%8B"><span class="toc-number">3.0.3.</span> <span class="toc-text">创建子进程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9E%E6%94%B6%E5%AD%90%E8%BF%9B%E7%A8%8B"><span class="toc-number">3.0.4.</span> <span class="toc-text">回收子进程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%91%E7%9C%A0%E8%BF%9B%E7%A8%8B"><span class="toc-number">3.0.5.</span> <span class="toc-text">休眠进程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD%E5%B9%B6%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F"><span class="toc-number">3.0.6.</span> <span class="toc-text">加载并运行程序</span></a></li></ol></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:独立功能的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现">Redis设计与实现:独立功能的实现</a><time datetime="2022-01-05T12:59:07.000Z" title="发表于 2022-01-05 20:59:07">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:多机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现">Redis设计与实现:多机数据库的实现</a><time datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:单机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现">Redis设计与实现:单机数据库的实现</a><time datetime="2022-01-04T06:38:05.000Z" title="发表于 2022-01-04 14:38:05">2022-01-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:数据结构与对象"/></a><div class="content"><a class="title" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象">Redis设计与实现:数据结构与对象</a><time datetime="2021-12-18T09:16:04.000Z" title="发表于 2021-12-18 17:16:04">2021-12-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kafka进阶篇：可靠性探究、应用、监控和高级应用"/></a><div class="content"><a class="title" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用">kafka进阶篇：可靠性探究、应用、监控和高级应用</a><time datetime="2021-11-25T01:59:17.000Z" title="发表于 2021-11-25 09:59:17">2021-11-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'pLWJLVgdxc6WLcEaFgEr2tQ2-gzGzoHsz',
+      appKey: 'OAmeyAUV6TdXoX5n1hSX4ELm',
+      placeholder: '请留下你的小脚印～',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      master: 'f94877d77182a6f9068fc12b5545e1f5',
+      tagMeta: ["博主","小伙伴","访客"],
+      friends: ["52dc4d80afb3aeab1d0deab1aa45a7b5","fd99ca470e7b5e8e2b4f76d6ed26d6cf"]
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/gh/HCLonely/Valine@latest/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

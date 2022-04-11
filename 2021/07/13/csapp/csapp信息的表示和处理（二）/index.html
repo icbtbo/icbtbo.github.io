@@ -1,0 +1,330 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>csapp信息的表示和处理（二） | sjc的搬砖小屋</title><meta name="keywords" content="csapp"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="信息存储；整数表示；整数运算；浮点数。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="csapp信息的表示和处理（二）">
+<meta property="og:url" content="https://icbtbo.github.io/2021/07/13/csapp/csapp%E4%BF%A1%E6%81%AF%E7%9A%84%E8%A1%A8%E7%A4%BA%E5%92%8C%E5%A4%84%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="信息存储；整数表示；整数运算；浮点数。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://icbtbo.github.io/img/default_bg.png">
+<meta property="article:published_time" content="2021-07-13T01:46:32.000Z">
+<meta property="article:modified_time" content="2021-07-23T08:01:02.264Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="csapp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://icbtbo.github.io/img/default_bg.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="https://icbtbo.github.io/2021/07/13/csapp/csapp%E4%BF%A1%E6%81%AF%E7%9A%84%E8%A1%A8%E7%A4%BA%E5%92%8C%E5%A4%84%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-07-23 16:01:02'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/default_bg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">csapp信息的表示和处理（二）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-07-13T01:46:32.000Z" title="发表于 2021-07-13 09:46:32">2021-07-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-07-23T08:01:02.264Z" title="更新于 2021-07-23 16:01:02">2021-07-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E3%80%8A%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E3%80%8B/">《深入理解计算机系统》</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h3 id="信息的存储"><a href="#信息的存储" class="headerlink" title="信息的存储"></a>信息的存储</h3><p><strong>字节</strong>：大多数计算机都使用<code>字节</code>(byte)作为系统中最小内存单位，内存就可以看作一个巨大的byte数组</p>
+<p><strong>虚拟地址空间</strong>：操作系统为程序提供<code>虚拟内存</code>(virtual memory)这一概念屏蔽了底层存储系统的复杂性，其中虚拟内存中每个字节都有自己的地址，也就是<code>虚拟地址</code>(virtual address)，虚拟内存中所有可能地址的集合就是<code>虚拟地址空间</code>(virtual address space)，C语言中某个指针的值就是某个存储块第一个字节的虚拟地址</p>
+<blockquote>
+<p>指针：C语言的重要特性，有<code>值</code>和<code>类型</code>两个属性，<code>值</code>是某个对象的虚拟地址，<code>类型</code>是表示那个位置上存储对象的类型</p>
+</blockquote>
+<h4 id="十六进制"><a href="#十六进制" class="headerlink" title="十六进制"></a>十六进制</h4><p>一个字节是8位，表示成二进制是<code>00000000 ~ 11111111</code>，表示成十进制的范围是<code>0 ~ 255</code>，表示成十六进制是<code>00 ~ FF</code>，很明显十六进制的表示方式更加简洁易用，计算机系统中通常以<code>0x</code>开头表示一个以十六进制展现的内存地址</p>
+<h4 id="字长"><a href="#字长" class="headerlink" title="字长"></a>字长</h4><p>所谓<code>字长</code>，就是指针携带的地址值的标称大小，32位字长的机器其虚拟地址范围就是0 ~ 2^32^（最大虚拟地址值是2^32^-1，也就是说32位字长的系统虚拟地址空间大小就是4GB），64位字长的机器其虚拟地址范围就是0 ~ 2^64^（16EB）</p>
+<blockquote>
+<p>向后兼容：64位机器可以运行32位机器编译的程序，但32位机器无法运行64位机器编译的程序</p>
+</blockquote>
+<h4 id="寻址"><a href="#寻址" class="headerlink" title="寻址"></a>寻址</h4><p>一个对象在内存中是以连续的字节序列的形式存储的，对象的地址就是这段字节序列中最低位置的地址值</p>
+<p>对象字节序列中，开始位置的字节称为<code>最低有效位</code>，结束位置称为<code>最高有效位</code>，比如对于<code>0x01234567</code>这个int，最高有效位字节就是01，最低有效位字节是67</p>
+<h5 id="字节顺序"><a href="#字节顺序" class="headerlink" title="字节顺序"></a>字节顺序</h5><p>对象在内存中的字节序列是由一定的顺序进行保存的，保存对象字节序列的顺序就是字节顺序，有<code>大端法</code>和<code>小端法</code>两种：</p>
+<ul>
+<li>大端法：从最高有效位到最低有效位的顺序存储对象</li>
+<li>小端法：从最低有效位到最高有效位的顺序进行存储</li>
+</ul>
+<h5 id="字符串的字节顺序"><a href="#字符串的字节顺序" class="headerlink" title="字符串的字节顺序"></a>字符串的字节顺序</h5><p>字符串类型的字节顺序与其他类型稍有不同，在任意平台上字符串都是正序排列</p>
+<h4 id="布尔代数"><a href="#布尔代数" class="headerlink" title="布尔代数"></a>布尔代数</h4><p>布尔运算在计算机系统中占有很重要的地位，在数值位运算中运用尤为广泛</p>
+<p>基本的布尔运算逻辑有四种<code>&amp;（与）</code>，<code>|（或）</code>，<code>~（非）</code>，<code>^（异或）</code>，四种布尔运算逻辑表格如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210713100019.png" alt="img"></p>
+<h5 id="位运算"><a href="#位运算" class="headerlink" title="位运算"></a>位运算</h5><p>布尔代数在计算机科学中一个很重要的运用就是位运算，C和Java等高级语言都支持位运算</p>
+<p>有以下程序，可以将x和y各自的地址相互对调：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">inplace_swap</span><span class="params">(<span class="keyword">int</span> *x, <span class="keyword">int</span> *y)</span> </span>&#123;</span><br><span class="line">    *y = *x ^ *y;</span><br><span class="line">    *x = *x ^ *y;</span><br><span class="line">    *y = *x ^ *y;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> x = <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">int</span> y = <span class="number">9</span>;</span><br><span class="line">    inplace_swap(&amp;x, &amp;y);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, x);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>, y);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>打印结果显示x=9，y=10，因为我们通过三次异或运算将x和y的值进行了对调，由此产生了一些结论：</p>
+<ol>
+<li>异或运算中，任何值与0的异或结果还是它本身</li>
+<li>异或运算中，任何值与它自己的异或结果为0</li>
+<li>异或运算支持结合律</li>
+</ol>
+<p>通过以下函数可以将一个数组前后颠倒：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">reverse_array</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> count)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> first, last;</span><br><span class="line">    <span class="keyword">for</span> (first = <span class="number">0</span>, last = count <span class="number">-1</span>; first &lt; last; first++, last--) &#123;</span><br><span class="line">        inplace_swap(&amp;a[first], &amp;a[last]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a[] = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>&#125;;</span><br><span class="line">    <span class="keyword">int</span> len = <span class="keyword">sizeof</span>(a) / <span class="keyword">sizeof</span>(a[<span class="number">0</span>]);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;size of array is %d\n&quot;</span>, len);</span><br><span class="line">    reverse_array(a, len);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, a[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>打印结果是”6, 5, 4, 3, 2, 1”</p>
+<h5 id="逻辑运算符"><a href="#逻辑运算符" class="headerlink" title="逻辑运算符"></a>逻辑运算符</h5><p>逻辑运算符和位运算符功能相似，不过逻辑运算符针对Boolean类型，而位运算符仅仅对数字做二进制位运算</p>
+<h5 id="移位运算"><a href="#移位运算" class="headerlink" title="移位运算"></a>移位运算</h5><p>移位运算通常用于对数字的二进制位进行移动计算，具体的移位运算还包括<code>逻辑移位</code>和<code>算术移位</code>：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210713100030.png" alt="img"></p>
+<p>与<code>逻辑右移位</code>不同的是，<code>算术右移位</code>会在空出来的高位补足移位个数的最高有效位的值</p>
+<p>与C语言不同的是，Java中<code>&gt;&gt;</code>代表<code>算术右移位</code>，<code>&gt;&gt;&gt;</code>代表<code>逻辑右移位</code></p>
+<p><strong>注意</strong>：移位运算符的优先级低于加减法运算符</p>
+<h3 id="整数表示"><a href="#整数表示" class="headerlink" title="整数表示"></a>整数表示</h3><p>整数类型在32位机器和64位机器上的取值范围是不一样的，int类型都是4字节编码，long类型在32位机器上是4字节编码，在64位机器上是8字节编码，此外C语言规定int类型可以用2字节长度来编码，long字节可以用4字节长度来编码，我想这应该是为了兼容32位和64位的平台</p>
+<h4 id="无符号数"><a href="#无符号数" class="headerlink" title="无符号数"></a>无符号数</h4><p>无符号数是没有负数编码的数字，最小值为0，在C语言中用<code>unsigned</code>进行声明，一般来说<code>int</code>表示有符号整形，<code>uintb</code>表示无符号整形 （与C语言不同，Java没有无符号数）</p>
+<p><strong>无符号数编码唯一性</strong>：在计算机系统中无符号数的编码具有唯一性，比如无符号数<code>10</code>的二进制编码是<code>1010</code>，那么可以断言<code>1010</code>这个编码如果表示的是一个无符号数的话，那它对应的十进制就只能是<code>10</code></p>
+<h4 id="有符号数"><a href="#有符号数" class="headerlink" title="有符号数"></a>有符号数</h4><p>学习有符号数前需要先了解<code>补码编码</code></p>
+<h5 id="补码编码"><a href="#补码编码" class="headerlink" title="补码编码"></a>补码编码</h5><blockquote>
+<p>补码`是计算机系统中表示负数必不可少的编码手段，通过补码表示的数字的最高有效位是符号位，为0则表示正数，为1则表示负数</p>
+</blockquote>
+<p><strong>补码转换为十进制有符号数</strong>：以下是换算补码二进制数到十进制数的两种方式：</p>
+<p><strong>权重法</strong>：换算方式与无符号二进制转十进制的方式类似，不过高位符号位需要取负号：<br>$$<br>1011: -1 <em>2^3 + 0</em> 2^2 + 1 <em>2^1 + 1</em> 2^0 = -5<br>$$</p>
+<p>$$<br>0101: 0 <em>2^3 + 1</em> 2^2 + 0 <em>2^1 + 1</em> 2^0 = 5<br>$$</p>
+<p><strong>取反法</strong>：判断最高有效位，如果最高位为0，则为正数，计算方式与无符号数一致，如果为1，则为负数，将最高位去掉，剩余位减去1后各位再取反，得到的二进制编码则是该负数的绝对值，比如上述例子中的<code>1011</code>去掉最高位后未<code>011</code>，减去1后为<code>010</code>，全部取反后为<code>101</code>，转换为十进制为<code>5</code>，则该负数是<code>-5</code></p>
+<p><strong>十进制有符号数转换为补码</strong>: 相应的，将十进制负数<code>-5</code>转换为补码形式<code>1011</code>就有以下方式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 绝对值转换为二进制： 101</span><br><span class="line"># 二进制位全部取反： 010</span><br><span class="line"># 加1： 011</span><br><span class="line"># 加上符号位： 1011</span><br></pre></td></tr></table></figure>
+
+<h3 id="整数运算"><a href="#整数运算" class="headerlink" title="整数运算"></a>整数运算</h3><h4 id="无符号加法"><a href="#无符号加法" class="headerlink" title="无符号加法"></a>无符号加法</h4><p>使用无符号加法需要注意溢出的情况，下列无符号short求和最后结果就发生了溢出，同样产生了截断，实际结果比理想的结果少了2^16^</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> <span class="keyword">short</span> c = <span class="number">44444</span> + <span class="number">22222</span>;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;a is %u, b is %u, result is %u&quot;</span>, a, b, c);</span><br></pre></td></tr></table></figure>
+
+<p>最后结果为1130，想要的结果是66666</p>
+<h4 id="补码加法"><a href="#补码加法" class="headerlink" title="补码加法"></a>补码加法</h4><p>大部分时间进行数值计算都是对补码进行操作，在进行补码加法时需要考虑当结果太大或者太小时会不会发生溢出的情况</p>
+<p>与无符号加法类似，如果加法结果超过当前数值类型的位数范围时会发生正溢出（太大）或者负溢出（太小）：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210713100044.png" alt="img"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">short</span> c = <span class="number">-22222</span> + (<span class="number">-22222</span>);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;a is %u, b is %u, result is %u&quot;</span>, a, b, c);</span><br></pre></td></tr></table></figure>
+
+<p>其结果为21092，发生了负溢出，其结果比想要的结果大了65536，也就是2^16^</p>
+<p>以下函数无法判断两个有符号补码数相加是否发生了溢出：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">check_overflow_short_add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> c = a + b;</span><br><span class="line">    <span class="keyword">return</span> (c - a) == b &amp;&amp; (c - b) == a;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>两个补码a和b相加得到结果c，不管有没有溢出，c-a的结果始终还是b，c-b的结果始终还是a</p>
+<h4 id="无符号乘法"><a href="#无符号乘法" class="headerlink" title="无符号乘法"></a>无符号乘法</h4><p>无符号乘法也存在高位截断的问题：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> <span class="keyword">short</span> a = <span class="number">222</span>;</span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">short</span> b = <span class="number">333</span>;</span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">short</span> c = a * b;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>, c);</span><br></pre></td></tr></table></figure>
+
+<p>理想结果为73926，实际得到的结果为8390，说明溢出的部分被截断了，只剩下了低16位的数据，也就是少了2^16^</p>
+<h4 id="补码乘法"><a href="#补码乘法" class="headerlink" title="补码乘法"></a>补码乘法</h4><p>补码乘法与无符号乘法差不多(<strong>两者的乘法运算位级表示都一样</strong>)，与补码加法一样也需要注意正溢出和负溢出截断的问题</p>
+<h4 id="对于某些常数乘法的优化"><a href="#对于某些常数乘法的优化" class="headerlink" title="对于某些常数乘法的优化"></a>对于某些常数乘法的优化</h4><p>乘法运算在大多数计算机上都是一个相当慢的运算，需要消耗过多的时钟周期，因此编译器对常数乘法运算会进行一些优化，用移位或者加法运算来代替常数因子的乘法运算</p>
+<p><code>移位优化</code>：某个数与2的幂作乘法就可以进行移位运算，<code>X * 2^k</code>就可以直接将X左移k位</p>
+<p><code>加法优化</code>：将乘数拆散为2的幂次的和，比如<code>X * 14</code>就可以拆为<code>X * (2^3 + 2^2 + 2)</code>，然后再用移位计算各个部分的值，最后再统一相加</p>
+<h3 id="浮点数"><a href="#浮点数" class="headerlink" title="浮点数"></a>浮点数</h3><p>现代计算机采用<code>IEEE浮点数标准</code>来处理带小数点的数字</p>
+<h4 id="二进制表示小数"><a href="#二进制表示小数" class="headerlink" title="二进制表示小数"></a>二进制表示小数</h4><p>与整数的二进制表示法类似，带小数的数字是用2的负幂次叠加来进行表示，比如5.75就可以拆散为：</p>
+<p><code>4 + 0 + 1 + 1/2 + 1/4</code>，用二进制进行表示就是：<code>101.11</code></p>
+<p>二进制用以下规则表示带小数的数字，整数部分就是2的正幂次，小数部分就是2的负幂次：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210713101535.png" alt="img"></p>
+<p><strong>缺陷</strong>：可以看出，二进制表示小数无法做到像十进制这么精确，像1/5这种小数通过十进制可以表示为0.2，但是用二进制的话只能通过增加二进制小数位数构造一个近似值来逼近，例如<code>0.00110011</code>这个二进制小数转换为十进制是<code>0.19921875</code>，已经很接近了</p>
+<h4 id="IEEE浮点数表示法"><a href="#IEEE浮点数表示法" class="headerlink" title="IEEE浮点数表示法"></a>IEEE浮点数表示法</h4><p>在二进制定点表示法的基础上，IEEE标准用以下公式来存储一个浮点数：</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210713101551.png" alt="img" style="zoom:67%;" />
+
+<p>各个参数解释如下：</p>
+<ul>
+<li><code>s</code>：符号标记，无论是float还是double类型都是有符号数，s为1则表示负数，s为0表示正数</li>
+<li><code>M</code>：尾数，保存浮点数的实际有效位，其大小是<code>1 &lt;= M &lt; 2</code>，以<code>1.1101</code>这样的形式展示；不过存储的时候会省略小数点左边的1，只存储右边的位，我们把保留下来的小数点右边的位称为<code>f</code></li>
+<li><code>E</code>：阶码，对尾数M进行加权，判断M的小数点需要左移或者右移多少位，最终计算得到真正的浮点数二进制表示</li>
+</ul>
+<p>计算机系统保存浮点数就是对这三个参数分别进行编码保存到固定的位数中，float类型保存到32位长度中，double类型则保存到64位长度中</p>
+<p><strong>float &amp; double</strong>：单精度浮点（float）和双精度浮点（double）除了最高位的符号位s，剩下的区别主要体现在对M和E的保存位数不一样：</p>
+<ul>
+<li><code>float</code>：E取8位，M取23位</li>
+<li><code>double</code>：E取11位，M取52位</li>
+</ul>
+<p>以32位的float为例讲一下编码保存各个参数的规则：</p>
+<ul>
+<li>编码s：保存为1或者0</li>
+<li>编码E：E的值即要表现2的正幂次，也要表现2的负幂次，而编码保存后的八位数<code>e</code>只能是无符号整数，范围是0 ~ 2^8^-1=255，因此E的真实取值范围需要在这个基础上做一个2^7^-1=127的偏移处理，也就是说<code>e = E + 127</code></li>
+<li>编码M：省略掉M小数点左边的1，只保留小数点右边的23位，也就是<code>f</code></li>
+</ul>
+<p>基于这个基本表示规则，有四种不同的情况，以32位float为例：</p>
+<ul>
+<li><code>E编码保存的值(e)不为0或者255(2^8-1)</code>：这种情况即为普通情况，E的取值范围是<code>-126 ~ 127</code></li>
+<li><code>e所有位都为0</code>：称为非规格化值，规定这种情况在解码时舍弃掉M小数点左边的1，只保留<code>f</code>；这种情况一般时拿来表示正0或者负0，或者非常逼近于0的小数</li>
+<li><code>e所有位都为1 &amp; f所有位为0</code>：无穷大数，s为1是负无穷，s为0是正无穷</li>
+<li><code>e所有位都为1 &amp; f不为0</code>：NaN，用来表现不是数字（无意义的数字）的情况</li>
+</ul>
+<p><strong>例子</strong>：以float类型<code>1.25</code>为例，计算机系统中使用32位二进制<code>00111111101000000000000000000000</code>来保存1.25</p>
+<img src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20210713101648.png" alt="img" style="zoom:75%;" />
+
+<p>如图：</p>
+<ol>
+<li>符号位s为0，表示正数</li>
+<li>阶码位e有8位，其值是127，因此<code>E = 127 - 127 = 0</code>，阶码E为0</li>
+<li>尾数位f有23位，其值是二进制0.01，也就是1/(2^2) = 1/4</li>
+</ol>
+<p>最终值<code>V = 1 * (1/(2^2)) * 1 = 1.25</code></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://icbtbo.github.io/2021/07/13/csapp/csapp%E4%BF%A1%E6%81%AF%E7%9A%84%E8%A1%A8%E7%A4%BA%E5%92%8C%E5%A4%84%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89/">https://icbtbo.github.io/2021/07/13/csapp/csapp%E4%BF%A1%E6%81%AF%E7%9A%84%E8%A1%A8%E7%A4%BA%E5%92%8C%E5%A4%84%E7%90%86%EF%BC%88%E4%BA%8C%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://icbtbo.github.io" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/csapp/">csapp</a></div><div class="post_share"><div class="social-share" data-image="/img/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/07/23/csapp/csapp%E7%A8%8B%E5%BA%8F%E7%9A%84%E6%9C%BA%E5%99%A8%E7%BA%A7%E8%A1%A8%E7%A4%BA%EF%BC%88%E4%B8%89%EF%BC%89/"><img class="prev-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">csapp程序的机器级表示（三）</div></div></a></div><div class="next-post pull-right"><a href="/2021/07/03/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL%E4%B9%8B%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/"><img class="next-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">MySQL之主从复制</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc-number">1.</span> <span class="toc-text">信息的存储</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%81%E5%85%AD%E8%BF%9B%E5%88%B6"><span class="toc-number">1.1.</span> <span class="toc-text">十六进制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%97%E9%95%BF"><span class="toc-number">1.2.</span> <span class="toc-text">字长</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%BB%E5%9D%80"><span class="toc-number">1.3.</span> <span class="toc-text">寻址</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AD%97%E8%8A%82%E9%A1%BA%E5%BA%8F"><span class="toc-number">1.3.1.</span> <span class="toc-text">字节顺序</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E5%AD%97%E8%8A%82%E9%A1%BA%E5%BA%8F"><span class="toc-number">1.3.2.</span> <span class="toc-text">字符串的字节顺序</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%83%E5%B0%94%E4%BB%A3%E6%95%B0"><span class="toc-number">1.4.</span> <span class="toc-text">布尔代数</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BD%8D%E8%BF%90%E7%AE%97"><span class="toc-number">1.4.1.</span> <span class="toc-text">位运算</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-number">1.4.2.</span> <span class="toc-text">逻辑运算符</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%A7%BB%E4%BD%8D%E8%BF%90%E7%AE%97"><span class="toc-number">1.4.3.</span> <span class="toc-text">移位运算</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B4%E6%95%B0%E8%A1%A8%E7%A4%BA"><span class="toc-number">2.</span> <span class="toc-text">整数表示</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A0%E7%AC%A6%E5%8F%B7%E6%95%B0"><span class="toc-number">2.1.</span> <span class="toc-text">无符号数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%89%E7%AC%A6%E5%8F%B7%E6%95%B0"><span class="toc-number">2.2.</span> <span class="toc-text">有符号数</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A1%A5%E7%A0%81%E7%BC%96%E7%A0%81"><span class="toc-number">2.2.1.</span> <span class="toc-text">补码编码</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B4%E6%95%B0%E8%BF%90%E7%AE%97"><span class="toc-number">3.</span> <span class="toc-text">整数运算</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A0%E7%AC%A6%E5%8F%B7%E5%8A%A0%E6%B3%95"><span class="toc-number">3.1.</span> <span class="toc-text">无符号加法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A1%A5%E7%A0%81%E5%8A%A0%E6%B3%95"><span class="toc-number">3.2.</span> <span class="toc-text">补码加法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A0%E7%AC%A6%E5%8F%B7%E4%B9%98%E6%B3%95"><span class="toc-number">3.3.</span> <span class="toc-text">无符号乘法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A1%A5%E7%A0%81%E4%B9%98%E6%B3%95"><span class="toc-number">3.4.</span> <span class="toc-text">补码乘法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E%E6%9F%90%E4%BA%9B%E5%B8%B8%E6%95%B0%E4%B9%98%E6%B3%95%E7%9A%84%E4%BC%98%E5%8C%96"><span class="toc-number">3.5.</span> <span class="toc-text">对于某些常数乘法的优化</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%AE%E7%82%B9%E6%95%B0"><span class="toc-number">4.</span> <span class="toc-text">浮点数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%A1%A8%E7%A4%BA%E5%B0%8F%E6%95%B0"><span class="toc-number">4.1.</span> <span class="toc-text">二进制表示小数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IEEE%E6%B5%AE%E7%82%B9%E6%95%B0%E8%A1%A8%E7%A4%BA%E6%B3%95"><span class="toc-number">4.2.</span> <span class="toc-text">IEEE浮点数表示法</span></a></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:独立功能的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现">Redis设计与实现:独立功能的实现</a><time datetime="2022-01-05T12:59:07.000Z" title="发表于 2022-01-05 20:59:07">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:多机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现">Redis设计与实现:多机数据库的实现</a><time datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:单机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现">Redis设计与实现:单机数据库的实现</a><time datetime="2022-01-04T06:38:05.000Z" title="发表于 2022-01-04 14:38:05">2022-01-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:数据结构与对象"/></a><div class="content"><a class="title" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象">Redis设计与实现:数据结构与对象</a><time datetime="2021-12-18T09:16:04.000Z" title="发表于 2021-12-18 17:16:04">2021-12-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kafka进阶篇：可靠性探究、应用、监控和高级应用"/></a><div class="content"><a class="title" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用">kafka进阶篇：可靠性探究、应用、监控和高级应用</a><time datetime="2021-11-25T01:59:17.000Z" title="发表于 2021-11-25 09:59:17">2021-11-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'pLWJLVgdxc6WLcEaFgEr2tQ2-gzGzoHsz',
+      appKey: 'OAmeyAUV6TdXoX5n1hSX4ELm',
+      placeholder: '请留下你的小脚印～',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      master: 'f94877d77182a6f9068fc12b5545e1f5',
+      tagMeta: ["博主","小伙伴","访客"],
+      friends: ["52dc4d80afb3aeab1d0deab1aa45a7b5","fd99ca470e7b5e8e2b4f76d6ed26d6cf"]
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/gh/HCLonely/Valine@latest/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

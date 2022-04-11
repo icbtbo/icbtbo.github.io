@@ -1,0 +1,318 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SpringWeb 应用程序构建 | sjc的搬砖小屋</title><meta name="keywords" content="spring,springweb"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="构建简单的spring web应用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SpringWeb 应用程序构建">
+<meta property="og:url" content="https://icbtbo.github.io/2020/12/28/spring/SpringWeb-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E6%9E%84%E5%BB%BA/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="构建简单的spring web应用">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20201225110131.png">
+<meta property="article:published_time" content="2020-12-28T09:14:27.000Z">
+<meta property="article:modified_time" content="2020-12-28T09:27:18.023Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="springweb">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20201225110131.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="https://icbtbo.github.io/2020/12/28/spring/SpringWeb-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E6%9E%84%E5%BB%BA/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2020-12-28 17:27:18'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20201225110131.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">SpringWeb 应用程序构建</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-12-28T09:14:27.000Z" title="发表于 2020-12-28 17:14:27">2020-12-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-12-28T09:27:18.023Z" title="更新于 2020-12-28 17:27:18">2020-12-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/spring%E5%85%A8%E5%AE%B6%E6%A1%B6/">spring全家桶</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/spring%E5%85%A8%E5%AE%B6%E6%A1%B6/spring-in-action%E9%98%85%E8%AF%BB%E6%80%BB%E7%BB%93/">spring in action阅读总结</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="构建Spring-Web应用程序"><a href="#构建Spring-Web应用程序" class="headerlink" title="构建Spring Web应用程序"></a>构建Spring Web应用程序</h2><ol>
+<li>映射请求到Spring控制器</li>
+<li>透明地绑定表单参数</li>
+<li>校验表单提交</li>
+</ol>
+<p>Spring MVC 基于模型-视图-控制器(Model-View-Controller，MVC)模式实现，帮助构建灵活和松耦合的Web应用程序</p>
+<h3 id="Spring-MVC起步"><a href="#Spring-MVC起步" class="headerlink" title="Spring MVC起步"></a>Spring MVC起步</h3><h4 id="Spring-MVC-请求流程"><a href="#Spring-MVC-请求流程" class="headerlink" title="Spring MVC 请求流程"></a>Spring MVC 请求流程</h4><p>Spring MVC框架将请求在调度Servler、处理器映射（handler mapping）、控制器以及视图解析器（view resolver）之间移动</p>
+<p><img src="https://segmentfault.com/img/bV9skr?w=675&h=395" alt="clipboard.png"></p>
+<p>1：请求访问前端控制器（DispatcherServlet）；<br>2：DispatcherServlet查询一个或多个处理器映射（handler mapping），通过请求路径确定控制器（Controller）；<br>3：DispatcherServlet将请求发送给控制器（Controller）；<br>4：控制器对请求进行处理返回模型和视图名（ModelAndView）；<br>5：DispatcherServlet查询视图解析器（view resolver），通过视图名匹配一个特定的视图实现；<br>6：DispatcherServlet将模型发送给视图；<br>7：视图通过模型数据渲染输出，通过响应对象传递给客户端；</p>
+<h4 id="搭建Spring-MVC"><a href="#搭建Spring-MVC" class="headerlink" title="搭建Spring MVC"></a>搭建Spring MVC</h4><h5 id="配置DisPatcherServlet"><a href="#配置DisPatcherServlet" class="headerlink" title="配置DisPatcherServlet"></a>配置DisPatcherServlet</h5><p>DisPatcherServlet是Spring MVC的核心。负责将请求路由到指定控制器处理。<br>传统方式，DispathcherServlet会配置在web.xml文件中；<br>借助于<strong>Servlet 3规范和Spring3.1功能增强</strong>，可实现Java配置DispatcherServlet</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">package demo;</span><br><span class="line">import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;</span><br><span class="line"></span><br><span class="line">public class DemoWebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected String[] getServletMappings() &#123;</span><br><span class="line">        return new String[]&#123; &quot;&#x2F;&quot; &#125;;                 &#x2F;&#x2F;将DispatcherServlet 映射到 &quot;&#x2F;&quot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected Class&lt;?&gt;[] getRootConfigClasses() &#123;</span><br><span class="line">        return new Class&lt;?&gt;[]&#123; RootConfig.class &#125;;   &#x2F;&#x2F;指定Spring配置类</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected Class&lt;?&gt;[] getServletConfigClasses() &#123;</span><br><span class="line">        return new Class&lt;?&gt;[]&#123; WebConfig.class &#125;;    &#x2F;&#x2F;指定Spring MVC配置类</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>原理：<br>1：在Serlvet 3环境中，Servlet容器会在类路径中查找实现javax.servlet.ServletContainerInitializer接口的类，用来配置Servlet容器；<br>2：Spring通过SpringServletContainerInitializer实现了该接口，SpringServletContainerInitializer又会在容器中查找实现WebApplicationInitializer接口的类并将配置任务交给它们来完成；<br>3：Spring3.2引入一个便利的WebApplicationInitializer基础实现，即AbstractAnnotationConfigDispatcherServletIni-tializer，通过继承该类，当部署到Servler3.0容器中时，容器就会自动发现它，并用它来配置Servlet上下文。</p>
+<p>继承AbstractAnnotationConfigDispatcherServletInitializer需重写三个方法：<br><strong>1：getServletMappings()</strong> 设置DispatcherServlet映射、</p>
+<p>在讲另外两个方法之前，先了解一下Dispatcher和一个Servler监听器（ContextLoaderListener）的关系<br><strong>关于两个应用上下文的关系</strong><br>DispatcherServlet启动的时候，会创建Spring应用上下文容器，并加载配置文件或配置类中所声明的bean。<br>Spring Web应用中，通常还有会另外一个应用上下文，由ContextLoaderListener创建。</p>
+<p>我们通常希望DispathcerServlet加载包含Web组件的bean，如控制器、视图解析器以及处理器映射。<br>而ContextLoaderListener加载应用中其他bean，这些bean通常是加载驱动应用后端的中间层和数据层组件。</p>
+<p><strong>2：getServletConfigClasses()</strong> 返回@Configuration注解类并定义DispatcherServlet应用上下文中的bean。<br><strong>3：getRootConfigClasses()</strong> 返回@Configuration注解类并定义ContextLoaderListener应用上下文中的bean。</p>
+<h5 id="启用Spring-MVC"><a href="#启用Spring-MVC" class="headerlink" title="启用Spring MVC"></a>启用Spring MVC</h5><p>完成配置DispatcherServlet后，需启用Spring MVC。</p>
+<p>传统方式：使用XML配置，使用<a href="mvn:annotation-driven">mvn:annotation-driven</a>启用注解驱动的Spring MVC<br>使用Java配置：@EnableWebMvc注解 启用Spring MVC</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">package demo;</span><br><span class="line">@Configuration</span><br><span class="line">@EnableWebMvc</span><br><span class="line">@ComponentScan(basePackages &#x3D; &quot;demo.web&quot;)    &#x2F;&#x2F; 控制器、视图解析器以及处理器映射。</span><br><span class="line">public void WebConfig extends WebMvcConfigurerAdapter &#123;</span><br><span class="line">    @Bean</span><br><span class="line">    public ViewResolver viewResolver () &#123;    &#x2F;&#x2F;设置视图解析器</span><br><span class="line">        InternalResourceViewResolver resolver &#x3D; new InternalResourceViewResolver();</span><br><span class="line">        resolver.setPrefix(&quot;&#x2F;WEB-INF&#x2F;views&#x2F;&quot;);</span><br><span class="line">        resolver.setSuffix(&quot;.jsp&quot;);</span><br><span class="line">        resolver.setExposeContextBeansAsAttributes(true);</span><br><span class="line">        return resolver;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    @Override    &#x2F;&#x2F;继承自WebMvcConfigurerAdapter 用于配置静态资源的处理</span><br><span class="line">    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) &#123;</span><br><span class="line">        configurer.enable();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">package demo;</span><br><span class="line">@Configuration</span><br><span class="line">@ComponentScan(basePackages &#x3D; &quot;demo&quot;,    &#x2F;&#x2F; 加载驱动应用后端的中间层和数据层组件</span><br><span class="line">    excludeFilters &#x3D; &#123;</span><br><span class="line">        @Filter(type &#x3D; FilterType.ANNOTATION, value &#x3D; EnableWebMvc.class)</span><br><span class="line">    &#125;</span><br><span class="line">)</span><br><span class="line">public class RootConfig &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="编写基本的控制器（Controller）"><a href="#编写基本的控制器（Controller）" class="headerlink" title="编写基本的控制器（Controller）"></a>编写基本的控制器（Controller）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">package demo.web;</span><br><span class="line"></span><br><span class="line">@Controller    &#x2F;&#x2F;声明为一个控制器，与@Component作用相同，语义不同，更具有可读性</span><br><span class="line">public class HomeController &#123;</span><br><span class="line">    </span><br><span class="line">    @RequestMapping(value &#x3D; &quot;&#x2F;&quot;, method &#x3D; RequestMethod.GET)     &#x2F;&#x2F; 处理对&quot;&#x2F;&quot;的GET请求</span><br><span class="line">    public String home() &#123;</span><br><span class="line">        return &quot;home&quot;;    &#x2F;&#x2F;视图名为home</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>基于以上配置，我们可以使用一个简单的Spring MVC访问页面，<br>为助于读者理解，提供一份开发部署流程，仅供参考：<br>1 配置DispatcherServlet，编写DemoWebAppInitializer（src.main.java.demo包）<br>2 开启Spring MVC，编写WebConfig 和 RootConfig （src.main.java.demo包）<br>3 编写控制器，HomeController（src.main.java.demo.web包）<br>4 编写页面，home.jsp（src.main.webapp.WEB-INF.views）<br>4 打war包（此过程应该会提示缺少web.xml,可在WEB-INF下添加web.xml 或 配置maven-war-plugin插件忽略web.xml）<br>5 部署war包至tomcat即可（注意Tomcat版本。理论上至少需要支持Servlet 3的Tomcat容器）</p>
+<h4 id="测试控制器"><a href="#测试控制器" class="headerlink" title="测试控制器"></a>测试控制器</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;关于断言</span><br><span class="line">import static org.junit.Assert.assertEquals;    &#x2F;&#x2F;此处通过静态引入assertEquals静态方法</span><br><span class="line">import org.junit.Test;</span><br><span class="line">import demo.web.HomeController;</span><br><span class="line">public class HomeControllerTest &#123;</span><br><span class="line"></span><br><span class="line">    @Test</span><br><span class="line">    public void testHomePage() throws Exception &#123;</span><br><span class="line">        HelloController controller &#x3D; new HelloController();</span><br><span class="line">        assertEquals(&quot;home&quot;,controller.home());    &#x2F;&#x2F;通过断言判断controller.home()返回的值是否为&quot;home&quot;，不是则报错。</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述测试仅调用home()，并断言返回包含”home”值的String,而不是站在Spring MVC控制器的视角进行测试。<br>正确的测试应该是发送”/“的GET请求会调用home()方法，并真正判断”home”是视图的名称。<br>Spring3.2开始支持第控制器视角的测试。通过<strong>mock Spring MVC</strong>并针对控制器执行HTTP请求的测试机制。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;</span><br><span class="line">import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;</span><br><span class="line">import static org.springframework.test.web.servlet.setup.MockMvcBuilders.*;</span><br><span class="line">import org.junit.Test;</span><br><span class="line">import org.springframework.test.web.servlet.MockMvc;</span><br><span class="line">import demo.web.HomeController;</span><br><span class="line">public class HomeControllerTest &#123;</span><br><span class="line"></span><br><span class="line">    @Test</span><br><span class="line">    public void testHomePage() throws Exception &#123;</span><br><span class="line">        HelloController controller &#x3D; new HelloController();</span><br><span class="line">       </span><br><span class="line">        MockMvc mockMvc &#x3D; standaloneSetup(controller).build();    &#x2F;&#x2F;构建MockMvc</span><br><span class="line"></span><br><span class="line">        mockMvc.perform(get(&quot;&#x2F;&quot;))                    &#x2F;&#x2F; 执行 &quot;&#x2F;&quot;GET请求</span><br><span class="line">                .andExpect(view().name(&quot;home&quot;));     &#x2F;&#x2F; 预期得到home视图</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="请求映射处理"><a href="#请求映射处理" class="headerlink" title="请求映射处理"></a>请求映射处理</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@Controller</span><br><span class="line">@RequestMapping(&quot;demo&quot;)    \\当控制器在类级别上添加该注解，这个注解会应用到控制器的所有处理器方法上。</span><br><span class="line">public void DemoController &#123;</span><br><span class="line">    </span><br><span class="line">    @RequestMapping(&quot;demo&quot;)    \\此方法路径为\demo\demo</span><br><span class="line">    public String demo () &#123;</span><br><span class="line">        return &quot;demo&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>@RequestMapping({“/“,”/demo”}) 支持多个路径映射</p>
+<h4 id="传递模型数据到视图"><a href="#传递模型数据到视图" class="headerlink" title="传递模型数据到视图"></a>传递模型数据到视图</h4><p>有三种方式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;方式1 Model（本质是一个Map，即 key-value 对的集合）</span><br><span class="line">public String demo(Model model) &#123;</span><br><span class="line">    &#x2F;&#x2F;未指定key时，key依据值类型推断得出（List&lt;String&gt;:stringList,String:string等）</span><br><span class="line">    model.addAttribute(createList());</span><br><span class="line">    return &quot;demo&quot;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;方式2 Map</span><br><span class="line">public String demo(Map model) &#123;</span><br><span class="line">    model.put(&quot;list&quot;,createList());</span><br><span class="line">    return &quot;demo&quot;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;方式3 此方式即没返回视图名称，也没显式设定模型</span><br><span class="line">public List&lt;String&gt; demo() &#123;</span><br><span class="line">    &#x2F;&#x2F;（视图名称由请求路径决定，返回的对象会添加到模型中，key由其类型推断，类似方式1）</span><br><span class="line">    return createList();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public List&lt;String&gt; createList() &#123;</span><br><span class="line">    List&lt;String&gt; list &#x3D; new ArrayList&lt;String&gt;();</span><br><span class="line">    list.add(&quot;A&quot;);</span><br><span class="line">    list.add(&quot;B&quot;);</span><br><span class="line">    return list;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="接受请求的输入"><a href="#接受请求的输入" class="headerlink" title="接受请求的输入"></a>接受请求的输入</h3><p>Spring MVC允许以多种方式传递参数<br>1：查询参数（Query Parameter）<br>2：表单参数（Form Parameter）<br>3：路径变量（Path Variable）</p>
+<h4 id="处理查询参数"><a href="#处理查询参数" class="headerlink" title="处理查询参数"></a>处理查询参数</h4><p>1基本类型 2 包装类型 3 java bean<br>默认以参数名接参<br><strong>@RequestParam</strong><br><strong>value、name</strong> 设置参数名（与请求参数名匹配）<br><strong>required</strong> 设置参数是否必传<br><strong>defaultValue</strong> 设置默认值</p>
+<h4 id="通过路径参数接受输入"><a href="#通过路径参数接受输入" class="headerlink" title="通过路径参数接受输入"></a>通过路径参数接受输入</h4><p>1 设置路径参数占位符<br>@RequestMapping(“/book/{id}”)</p>
+<p>2 接受路径参数<br>public String getBook(@PathVariable Long id) {…}</p>
+<p><strong>@PathVariable</strong><br><strong>value、name</strong> 设置参数名（与路径参数名匹配）<br><strong>required</strong> 设置参数是否必传</p>
+<p>传输少量数据时，查询参数 和 路径参数都很适合<br>传递很多数据时，通常是表单提交的数据</p>
+<h3 id="处理表单"><a href="#处理表单" class="headerlink" title="处理表单"></a>处理表单</h3><h4 id="接受表单数据"><a href="#接受表单数据" class="headerlink" title="接受表单数据"></a>接受表单数据</h4><p>表单的数据往往较多，可使用java Bean接受参数，Spring MVC会将请求参数中与bean属性同名的进行赋值，并返回bean实例。</p>
+<h4 id="检验表单数据"><a href="#检验表单数据" class="headerlink" title="检验表单数据"></a>检验表单数据</h4><p>避免校验逻辑弄乱处理器代码，可使用Spring对Java校验API(Java Validation API,又称JSR-303)的支持。<br>Spring3.0开始，Spring MVC中提供了对Java校验API的支持。只需导入该Java API的实现即可，如<strong>Hibernate Validator</strong></p>
+<p>将注解定义到Java Bean字段属性上，在接受参数处对待检验的参数添加 <strong>@Valid</strong> 即可</p>
+<table>
+<thead>
+<tr>
+<th>@AssertFalse</th>
+<th>所注解的元素必须为Boolean类型，且值为false</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>@AssertTrue</td>
+<td>所注解的元素必须为Boolean类型，且值为true</td>
+</tr>
+<tr>
+<td>@DecimalMax</td>
+<td>所注解的元素必须为数字，且值要小于或等于给定的BigDecimalString的值</td>
+</tr>
+<tr>
+<td>@DecimalMin</td>
+<td>所注解的元素必须为数字，且值要大于或等于给定的BigDecimalString的值</td>
+</tr>
+<tr>
+<td>@Max</td>
+<td>所注解的元素必须为数字，并且它的值要小于或等于给定的值</td>
+</tr>
+<tr>
+<td>@Min</td>
+<td>所注解的元素必须为数字，并且它的值要大于或等于给定的值</td>
+</tr>
+<tr>
+<td>@Digits</td>
+<td>所注解的元素必须为数字，且值必须有指定的位数</td>
+</tr>
+<tr>
+<td>@Future</td>
+<td>所注解的元素必须为一个将来的日期</td>
+</tr>
+<tr>
+<td>@Past</td>
+<td>所注解元素必须为一个已过去的日期</td>
+</tr>
+<tr>
+<td>@NotNull</td>
+<td>所注解元素的值必须不能为null</td>
+</tr>
+<tr>
+<td>@Null</td>
+<td>所注解元素的值必须为null</td>
+</tr>
+<tr>
+<td>@Pattern</td>
+<td>所注解元素必须匹配给定的正则表达式</td>
+</tr>
+<tr>
+<td>@Size</td>
+<td>所注解的元素的值必须是String、集合或数组，并且它的长度要符合给定的范围</td>
+</tr>
+</tbody></table>
+<p>校验出错时，可以通过Errors对象进行访问，此对象已作为processRegistration()方法参数。（需注意，Errors参数要紧跟在带有@Valid注解的参数后面）<br>processRegistration()方法所做的第一件事就是调用Errors.hasErrors()来检查是否有错误。例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//...表示省略</span></span><br><span class="line"><span class="meta">@RequestMapping(...)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">processRegistration</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">	<span class="meta">@valid</span> Spitter spitter,</span></span></span><br><span class="line"><span class="function"><span class="params">	Errors errors)</span></span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(errors.hasErrors())&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;registerForm&quot;</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  spitterRepository.save(spitter);</span><br><span class="line">  <span class="keyword">return</span> ...;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="forward-和-redirect"><a href="#forward-和-redirect" class="headerlink" title="forward 和 redirect"></a>forward 和 redirect</h3><p>总结一句话：转发是服务器行为，重定向是客户端行为。</p>
+<p>转发过程（forward）：客户浏览器发送http请求–》web服务器接受此请求–》调用内部的一个方法在容器内部完成请求处理和转发动作—-》将目标资源发送给客户；在这里，转发的路径必须是同一个web容器下的url，其不能转向到其他的web路径上去，中间传递的是自己的容器内的request。在客户浏览器路径栏显示的仍然是其第一次访问的路径，也就是说客户是感觉不到服务器做了转发的。转发行为是浏览器只做了一次访问请求。</p>
+<p>重定向过程（redirect）：客户浏览器发送http请求–àweb服务器接受后发送302状态码响应及对应新的location给客户浏览器–》客户浏览器发现是302响应，则自动再发送一个新的http请求，请求url是新的location地址—-》服务器根据此请求寻找资源并发送给客户。在这里location可以重定向到任意URL，既然是浏览器重新发出了请求，则就没有什么request传递的概念了。在客户浏览器路径栏显示的是其重定向的路径，客户可以观察到地址的变化的。重定向行为是浏览器做了至少两次的访问请求的。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://icbtbo.github.io/2020/12/28/spring/SpringWeb-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E6%9E%84%E5%BB%BA/">https://icbtbo.github.io/2020/12/28/spring/SpringWeb-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E6%9E%84%E5%BB%BA/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://icbtbo.github.io" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/spring/">spring</a><a class="post-meta__tags" href="/tags/springweb/">springweb</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20201225110131.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/01/04/%E7%AE%97%E6%B3%95/%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E4%B8%AD%E5%BA%8F%E9%81%8D%E5%8E%86/"><img class="prev-cover" src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20201208113944.jpeg" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">二叉树的中序遍历</div></div></a></div><div class="next-post pull-right"><a href="/2020/12/25/spring/Spring-AOP/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20201225110131.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Spring AOP</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2020/12/25/spring/Spring-AOP/" title="Spring AOP"><img class="cover" src="https://cdn.jsdelivr.net/gh/icbtbo/cloudimg//img/20201225110131.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-25</div><div class="title">Spring AOP</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E5%BB%BASpring-Web%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.</span> <span class="toc-text">构建Spring Web应用程序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Spring-MVC%E8%B5%B7%E6%AD%A5"><span class="toc-number">1.1.</span> <span class="toc-text">Spring MVC起步</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Spring-MVC-%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B"><span class="toc-number">1.1.1.</span> <span class="toc-text">Spring MVC 请求流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%90%AD%E5%BB%BASpring-MVC"><span class="toc-number">1.1.2.</span> <span class="toc-text">搭建Spring MVC</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEDisPatcherServlet"><span class="toc-number">1.1.2.1.</span> <span class="toc-text">配置DisPatcherServlet</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%90%AF%E7%94%A8Spring-MVC"><span class="toc-number">1.1.2.2.</span> <span class="toc-text">启用Spring MVC</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E5%86%99%E5%9F%BA%E6%9C%AC%E7%9A%84%E6%8E%A7%E5%88%B6%E5%99%A8%EF%BC%88Controller%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">编写基本的控制器（Controller）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="toc-number">1.2.1.</span> <span class="toc-text">测试控制器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E6%98%A0%E5%B0%84%E5%A4%84%E7%90%86"><span class="toc-number">1.2.2.</span> <span class="toc-text">请求映射处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%A0%E9%80%92%E6%A8%A1%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%88%B0%E8%A7%86%E5%9B%BE"><span class="toc-number">1.2.3.</span> <span class="toc-text">传递模型数据到视图</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%97%E8%AF%B7%E6%B1%82%E7%9A%84%E8%BE%93%E5%85%A5"><span class="toc-number">1.3.</span> <span class="toc-text">接受请求的输入</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E6%9F%A5%E8%AF%A2%E5%8F%82%E6%95%B0"><span class="toc-number">1.3.1.</span> <span class="toc-text">处理查询参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E8%B7%AF%E5%BE%84%E5%8F%82%E6%95%B0%E6%8E%A5%E5%8F%97%E8%BE%93%E5%85%A5"><span class="toc-number">1.3.2.</span> <span class="toc-text">通过路径参数接受输入</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E8%A1%A8%E5%8D%95"><span class="toc-number">1.4.</span> <span class="toc-text">处理表单</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E5%8F%97%E8%A1%A8%E5%8D%95%E6%95%B0%E6%8D%AE"><span class="toc-number">1.4.1.</span> <span class="toc-text">接受表单数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A3%80%E9%AA%8C%E8%A1%A8%E5%8D%95%E6%95%B0%E6%8D%AE"><span class="toc-number">1.4.2.</span> <span class="toc-text">检验表单数据</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#forward-%E5%92%8C-redirect"><span class="toc-number">1.5.</span> <span class="toc-text">forward 和 redirect</span></a></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:独立功能的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现">Redis设计与实现:独立功能的实现</a><time datetime="2022-01-05T12:59:07.000Z" title="发表于 2022-01-05 20:59:07">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:多机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现">Redis设计与实现:多机数据库的实现</a><time datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:单机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现">Redis设计与实现:单机数据库的实现</a><time datetime="2022-01-04T06:38:05.000Z" title="发表于 2022-01-04 14:38:05">2022-01-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:数据结构与对象"/></a><div class="content"><a class="title" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象">Redis设计与实现:数据结构与对象</a><time datetime="2021-12-18T09:16:04.000Z" title="发表于 2021-12-18 17:16:04">2021-12-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kafka进阶篇：可靠性探究、应用、监控和高级应用"/></a><div class="content"><a class="title" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用">kafka进阶篇：可靠性探究、应用、监控和高级应用</a><time datetime="2021-11-25T01:59:17.000Z" title="发表于 2021-11-25 09:59:17">2021-11-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'pLWJLVgdxc6WLcEaFgEr2tQ2-gzGzoHsz',
+      appKey: 'OAmeyAUV6TdXoX5n1hSX4ELm',
+      placeholder: '请留下你的小脚印～',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      master: 'f94877d77182a6f9068fc12b5545e1f5',
+      tagMeta: ["博主","小伙伴","访客"],
+      friends: ["52dc4d80afb3aeab1d0deab1aa45a7b5","fd99ca470e7b5e8e2b4f76d6ed26d6cf"]
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/gh/HCLonely/Valine@latest/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

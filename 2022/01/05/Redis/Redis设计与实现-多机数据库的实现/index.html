@@ -1,0 +1,598 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Redis设计与实现:多机数据库的实现 | sjc的搬砖小屋</title><meta name="keywords" content="redis"><meta name="author" content="icbtbo"><meta name="copyright" content="icbtbo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="本文主要介绍Redis的复制机制、哨兵（sentinel）机制以及cluster集群">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis设计与实现:多机数据库的实现">
+<meta property="og:url" content="https://icbtbo.github.io/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/index.html">
+<meta property="og:site_name" content="sjc的搬砖小屋">
+<meta property="og:description" content="本文主要介绍Redis的复制机制、哨兵（sentinel）机制以及cluster集群">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://icbtbo.github.io/img/default_bg.png">
+<meta property="article:published_time" content="2022-01-05T01:35:35.000Z">
+<meta property="article:modified_time" content="2022-04-07T13:53:43.160Z">
+<meta property="article:author" content="icbtbo">
+<meta property="article:tag" content="redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://icbtbo.github.io/img/default_bg.png"><link rel="shortcut icon" href="/img/home.png"><link rel="canonical" href="https://icbtbo.github.io/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-04-07 21:53:43'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="sjc的搬砖小屋" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/niu.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/default_bg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">sjc的搬砖小屋</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">Redis设计与实现:多机数据库的实现</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-04-07T13:53:43.160Z" title="更新于 2022-04-07 21:53:43">2022-04-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E3%80%8ARedis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/">《Redis设计与实现》阅读笔记</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="复制"><a href="#复制" class="headerlink" title="复制"></a>复制</h2><p>在Redis中，可通过SLAVEOF命令或配置文件中设置slaveof选项，让一个服务器去复制另一个服务器，被复制的为主服务器，对其复制的称为从服务器。</p>
+<h3 id="旧版本复制功能的实现"><a href="#旧版本复制功能的实现" class="headerlink" title="旧版本复制功能的实现"></a>旧版本复制功能的实现</h3><p>Redis在2.8以前使用旧版本复制，在从服务器断线重连时会遇上低效的情况。</p>
+<p>Redis的复制功能分为<strong>同步</strong>和<strong>命令传播</strong>俩操作：</p>
+<ul>
+<li>同步用于把从服务器的数据库状态<strong>更新至主服务器的数据库状态</strong>。</li>
+<li>命令传播是在主服务器的<strong>数据库状态被修改</strong>导致主从数据库状态不一致时，让主从回到一致的过程。</li>
+</ul>
+<p><strong>同步</strong></p>
+<p>从服务器对主服务器的同步（下文以主从代替），需要向主服务器发送SYNC命令，具体步骤：</p>
+<ol>
+<li>从向主发送SYNC命令。</li>
+<li>主接收并<strong>执行BGSAVE</strong>，后台生成RDB文件，并用一个<strong>缓冲区记录</strong>现在开始执行的所有写命令。</li>
+<li>BGSAVE执行完毕时，主将RDB文件发给从，从接收并载入，更新数据库状态。</li>
+<li>主将其记录在<strong>缓冲区的所有写命令</strong>发给从，从执行写命令。</li>
+</ol>
+<p>下图展示了同步的过程：</p>
+<p><img src="https://blogimg-picgo.oss-cn-beijing.aliyuncs.com/img/202201050941116.jpg" alt="img"></p>
+<p><strong>命令传播</strong></p>
+<p>当主发生写操作时，主从同步需要通过命令传播，具体步骤：</p>
+<ol>
+<li>主将写命令发送给从。</li>
+<li>从接收并执行相同的写命令。</li>
+</ol>
+<h3 id="旧版复制功能的缺陷"><a href="#旧版复制功能的缺陷" class="headerlink" title="旧版复制功能的缺陷"></a>旧版复制功能的缺陷</h3><p>旧版复制的缺陷主要体现在断线重连上：</p>
+<p>主因为网络原因中断复制，但从通过自动重连连上主，并继续复制主。此时，从发送SYNC命令，希望将<strong>断线期间</strong>由于对主的写操作造成的主从数据库不一致状态同步回一致状态，但SYNC每次都会<strong>重新生成RDB文件</strong>，将<strong>所有的</strong>数据库状态都写到RDB，这就造成了资源的<strong>大量浪费</strong>。</p>
+<p>SYNC命令对性能的损耗比较高主要表现在：</p>
+<ol>
+<li>主执行BGSAVE生成RDB文件会消耗<strong>CPU、内存和磁盘I/O资源</strong>。</li>
+<li>主需要发送RDB，消耗<strong>网络资源</strong>。</li>
+<li>从接收并载入RDB，载入期间是<strong>阻塞的无法处理命令</strong>。</li>
+</ol>
+<p>因此，必须是真正有必要时才调用SYNC命令。</p>
+<h3 id="新版复制功能的实现"><a href="#新版复制功能的实现" class="headerlink" title="新版复制功能的实现"></a>新版复制功能的实现</h3><p>Redis从2.8开始使用PSYNC代替SYNC命令来执行同步操作。</p>
+<p>PSYNC有完整重同步和部分重同步的两种模式：</p>
+<ul>
+<li><p>完整重同步用于初次复制的情况，与SYNC命令一样。</p>
+</li>
+<li><p>部分重同步用于处理断线重连后的情况，重连后，主服务器将<strong>断线期间执行的写命令</strong>发送给从服务器，从只需接收并执行这些命令。</p>
+<p>部分重同步的执行过程：</p>
+<ul>
+<li>从向主发送PSYNC命令，请求同步数据。</li>
+<li>主判断后，确认需要执行部分重同步时，返回给从**+COUNTINUE**。</li>
+<li>主将断线期间的写命令发送给从。</li>
+</ul>
+<p>下图展示了部分重同步的过程：</p>
+</li>
+</ul>
+<p><img src="https://blogimg-picgo.oss-cn-beijing.aliyuncs.com/img/202201050941165.jpg" alt="img"></p>
+<h3 id="部分重同步的实现"><a href="#部分重同步的实现" class="headerlink" title="部分重同步的实现"></a>部分重同步的实现</h3><p>部分重同步基于三个部分实现：</p>
+<ul>
+<li>主从服务器的复制偏移量</li>
+<li>主服务器的复制积压缓冲区</li>
+<li>服务器运行ID</li>
+</ul>
+<p><strong>复制偏移量</strong></p>
+<p>主从都会维护一个复制偏移量，记录<strong>存储数据的字节数</strong>，当主服务器向从服务器传播N个字节数据时，主的复制偏移量会加N，从接收到之后也会加N。通过偏移量<strong>判断数据库状态是否一致</strong>。但有一个问题，就是从服务器重连后，需要执行部分还是完整重同步，这时候就需要复制积压缓冲区来帮忙判断。</p>
+<p><strong>复制积压缓冲区</strong></p>
+<p>复制积压缓冲区由主服务器维护，是固定长度的<strong>先进先出队列</strong>，默认1M。当入队元素大于队列长度时，最先入队的元素会被弹出。主服务器在命令传播时，不仅将写命令发给从，还会将<strong>写命令入队至积压缓冲区</strong>。</p>
+<p>下图展示了传播的命令发给从并写入缓冲区的过程：</p>
+<p><img src="https://blogimg-picgo.oss-cn-beijing.aliyuncs.com/img/202201050941262.jpg" alt="img"></p>
+<p>复制积压缓冲区会保存最近写的命令，并为队列中的<strong>每个字节记录复制偏移量</strong>。</p>
+<p><img src="https://blogimg-picgo.oss-cn-beijing.aliyuncs.com/img/202201050941357.jpg" alt="img"></p>
+<p>当从服务器重连后，发送PSYNC并将自己的复制偏移量也发送给主服务器，主服务器拿着复制偏移量去复制积压缓冲区找，如果<strong>存在</strong>则进行部分重同步并给从服务器<strong>发送+CONTINUE</strong>回复，否则进行完整重同步。</p>
+<p>复制积压缓冲区大小应该根据实际场景的两个因素进行调整：</p>
+<ul>
+<li>断线重连平均时间</li>
+<li>主服务器平均每秒产生写命令的数据量</li>
+</ul>
+<p>一般得将这两个指标相乘后再乘以2，作为复制积压缓冲区的大小，应对大多数断线情况。</p>
+<p><strong>服务器运行ID</strong></p>
+<p>服务器运行ID决定断线后执行哪种同步方式，主从都有运行ID，是自动生成的40个随机十六进制字符。主从第一次复制时，从服务器会保存主服务器的ID，断线后也会向主服务器发送这个ID，如果<strong>不同则进行完整重同步</strong>（之前的主服务器由于某些原因连接断开，重新选举的情况）；相同则部分重同步。</p>
+<h3 id="PSYNC命令的实现"><a href="#PSYNC命令的实现" class="headerlink" title="PSYNC命令的实现"></a>PSYNC命令的实现</h3><p>PSYNC命令调用方法有两种：</p>
+<ul>
+<li>从服务器第一次复制时，会发送<code>PSYNC ? -1</code>命令，请求完整重同步。</li>
+<li>已经复制过的情况，向主服务器发送<code>PSYNC &lt;runid&gt; &lt;offset&gt;</code>命令，一个是主服务器运行ID，一个是积压缓冲区的偏移量。</li>
+</ul>
+<p>主服务器接收后有3种返回值：</p>
+<ul>
+<li><code>+FULLRESYNC &lt;runid&gt; &lt;offset&gt;</code>：表示执行<strong>完整重同步</strong>，从服务器会将这两个变量保存。</li>
+<li><code>+CONTINUE</code>：执行<strong>部分重同步</strong>，从服务器等待缺失数据的发送。</li>
+<li><code>-ERR</code>：主服务器版本低于2.8，执行<strong>完整重同步</strong>操作。</li>
+</ul>
+<p>下图展示了PSYNC的执行流程： </p>
+<p><img src="https://blogimg-picgo.oss-cn-beijing.aliyuncs.com/img/202201050941507.jpg" alt="img"></p>
+<h3 id="一次完整的主从复制过程"><a href="#一次完整的主从复制过程" class="headerlink" title="一次完整的主从复制过程"></a>一次完整的主从复制过程</h3><p>一次完整的复制过程可以分为设置主服务器的地址和端口、建立套接字连接、发送PING命令、身份验证、发送端口信息、同步、命令传播。</p>
+<ul>
+<li><p><strong>设置主服务器的地址和端口</strong></p>
+<p>当客户端向服务器发送SLAVEOF命令时，从服务器会将主服务器的ip和端口都保存后发送OK。这是一个<strong>异步命令</strong>，所以复制工作在回复OK后再执行。</p>
+</li>
+<li><p><strong>建立套接字连接</strong></p>
+<p>从服务器此时创建连接主服务器的套接字，如果套接字能成功连接，从服务器会给它关联一个处理复制工作的<strong>文件事件处理器</strong>（负责接收RDB，传播的命令等）。主从成功连接后，主服务器会创建从服务器的客户端状态。</p>
+</li>
+<li><p><strong>发送PING命令</strong></p>
+<p>从服务器在套接字连接后做的第一个工作就是发送PING命令，检查套接字<strong>读写状态是否正常</strong>；主服务器<strong>能否正常处理命令请求</strong>。而主服务器会根据网络状态、能够处理给出对应回复。一旦回复超时或返回错误，从服务器就会断开并重连主服务器。</p>
+</li>
+<li><p><strong>身份验证</strong></p>
+<p>检查从服务器是否设置masterauth，如果设置则进行身份验证。</p>
+</li>
+<li><p><strong>发送端口信息</strong></p>
+<p>身份验证后，从服务器向主服务器发送自己监听的端口号，主服务器保存这个端口号。</p>
+</li>
+<li><p><strong>同步</strong></p>
+<p>从服务器发送PSYNC命令，主从互相成为对方的客户端，都能够执行命令并回复，执行同步操作，看是完整重同步还是部分重同步。</p>
+</li>
+<li><p><strong>命令传播</strong></p>
+<p>完成同步后，进入该阶段，主服务器将写命令发送给从服务器，从服务器接收并执行。</p>
+</li>
+</ul>
+<h3 id="心跳检测"><a href="#心跳检测" class="headerlink" title="心跳检测"></a>心跳检测</h3><p>在命令传播阶段，从服务器默认<strong>1秒一次</strong>发送<code>REPLCONF ACK &lt;replication_offset&gt;</code>命令给主服务器，replication_offset是复制偏移量。这么做有3个作用：</p>
+<ul>
+<li>检测主从网络状态</li>
+<li>辅助实现min-slave选项</li>
+<li>检测命令丢失</li>
+</ul>
+<p><strong>检测主从网络状态</strong></p>
+<p>下面分别说这三个作用。检测网络连接很好理解，如果主服务器超过一秒没收到从服务器的<code>REPLCONF ACK</code>则表示连接有问题。</p>
+<p><strong>辅助实现min-slave选项</strong></p>
+<p>Redis的<code>min-slaves-to-write</code>和<code>min-slaves-max-lag</code>可<strong>防止主服务器在不安全的情况下执行写命令</strong>。如果设置如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">min-slaves-to-write 3 </span><br><span class="line">min-slaves-max-lag 10</span><br></pre></td></tr></table></figure>
+
+<p>表示从服务器数量少于3或3个从服务器延迟大于等于10s时，主服务器拒绝写命令。</p>
+<p><strong>检测命令丢失</strong></p>
+<p>通过发送的偏移量，主服务器会判断命令是否有丢失，如果丢失，就从积压缓冲区里找到并<strong>补发</strong>。</p>
+<blockquote>
+<p>注：Redis2.8之前版本并<strong>不会注意</strong>到丢失数据，所以保持主从数据一致性最好使用以上版本。</p>
+</blockquote>
+<h2 id="Sentinel机制"><a href="#Sentinel机制" class="headerlink" title="Sentinel机制"></a>Sentinel机制</h2><p>Sentinel（哨兵）是Redis的<strong>高可用性</strong>的解决方案，由一个或多个Sentinel实例组成的Sentinel系统可以监视任意多个主服务器以及属下的所有从服务器。当主服务器下线时，自动将下线的某个主服务器属下的某个从服务器<strong>升级</strong>为新的主服务器。从而实现<strong>故障转移</strong>，当原来的主服务器重新上线时，会被降级为从服务器。</p>
+<p>下面展示了哨兵监视主从的状态：</p>
+<p><img src="https://blogimg-picgo.oss-cn-beijing.aliyuncs.com/img/202201051117188.jpg" alt="img"></p>
+<p>下面主要讲解Sentinel系统对主服务器执行故障转移的整个过程。</p>
+<h3 id="启动并初始化Sentinel"><a href="#启动并初始化Sentinel" class="headerlink" title="启动并初始化Sentinel"></a>启动并初始化Sentinel</h3><p>启动Sentinel有两种方式：</p>
+<ul>
+<li><code>redis-sentinel /path/to/your/sentinel.conf</code></li>
+<li><code>redis-server /path/to/your/sentinel.conf --sentinel</code></li>
+</ul>
+<p>俩命令效果相同，启动时需要执行以下步骤：</p>
+<ol>
+<li>初始化服务器。</li>
+<li>将普通Redis服务器使用的代码替换成Sentinel专用代码。</li>
+<li>初始化Sentinel状态。</li>
+<li>根据配置文件，初始化Sentinel的监视主服务器列表。</li>
+<li>创建连向主服务器的网络连接。</li>
+</ol>
+<p>接下来对这些步骤进行详细说明。</p>
+<p><strong>初始化服务器</strong></p>
+<p>Sentinel实际上是一个特殊的Redis服务器，所以很多地方和Redis服务器的初始化有些类似。只不过少了RDB或AOF文件的载入等操作。</p>
+<p><strong>使用Sentinel专用代码</strong></p>
+<p>将加载的常量，命令表（决定了Sentinel可以执行哪些命令）等替换为Sentinel专用的。</p>
+<p><strong>初始化Sentinel状态</strong></p>
+<p>初始化一个<code>sentinel.c/sentinelState</code>结构，记录Sentinel的状态，保存了服务器中所有与Sentinel相关的状态：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sentinelState</span>&#123;</span></span><br><span class="line">    <span class="comment">//当前纪元，选举计数器，用于实现故障转移</span></span><br><span class="line">    uint64_ t current_ epoch;</span><br><span class="line">    <span class="comment">//（重点）保存了所有被这个sentinel监视的主服务器</span></span><br><span class="line">    <span class="comment">//字典的键是主服务器的名字，值是一个指向sentine1RedisInstance结构的指针</span></span><br><span class="line">    dict masters;</span><br><span class="line">    <span class="comment">//是否进入了TILT模式</span></span><br><span class="line">    <span class="keyword">int</span> tilt;</span><br><span class="line">    <span class="comment">//目前正在执行的脚本的数量</span></span><br><span class="line">    <span class="keyword">int</span> running_ scripts;</span><br><span class="line">    <span class="comment">//进入TILT模式的时间</span></span><br><span class="line">    mstime_ <span class="keyword">_t</span> tilt_ start_ time;</span><br><span class="line">    <span class="comment">//最后一次执行时间处理器的时间</span></span><br><span class="line">    mstime_ t previous_ time ;</span><br><span class="line">    <span class="comment">//一个FIFO队列，包含了所有需要执行的用户脚本</span></span><br><span class="line">    <span class="built_in">list</span> *scripts_ <span class="built_in">queue</span>;</span><br><span class="line">&#125;sentinel;</span><br></pre></td></tr></table></figure>
+
+<p><strong>初始化master属性</strong></p>
+<p>masters字典的值是一个指向sentine1RedisInstance结构的指针，而一个sentine1RedisInstance实例包括主服务器、从服务器或另一个Sentinel。实例结构如下，了解一下，故障转移的可以先不关注：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">sentinelRedisInstance</span> &#123;</span></span><br><span class="line">    <span class="comment">//标识值，记录了实例的类型，以及该实例的当前状态.</span></span><br><span class="line">    <span class="keyword">int</span> flags;</span><br><span class="line">    <span class="comment">//实例的名字.</span></span><br><span class="line">    <span class="comment">//主服务器的名字由用户在配置文件中设置</span></span><br><span class="line">    <span class="comment">//从服务器以及Sentinel 的名字由Sentinel 自动设置</span></span><br><span class="line">    <span class="comment">//格式为ip:port</span></span><br><span class="line">    <span class="keyword">char</span> *name;</span><br><span class="line">    <span class="comment">//实例的运行ID .</span></span><br><span class="line">    <span class="keyword">char</span> *runid;</span><br><span class="line">    <span class="comment">//配置纪元，用于实现故障转移</span></span><br><span class="line">    <span class="keyword">uint64_t</span> config_epoch;</span><br><span class="line">    <span class="comment">//实例的地址</span></span><br><span class="line">    sentinelAddr *addr;</span><br><span class="line">    <span class="comment">// SENTINEL down-after-milliseconds 选项设定的值</span></span><br><span class="line">    <span class="comment">//实例无响应多少毫秒之后才会被判断为主观下线</span></span><br><span class="line">    <span class="keyword">mstime_t</span> down_after_period;</span><br><span class="line">    <span class="comment">//判断这个实例为客观下线所需的支持投票数量</span></span><br><span class="line">    <span class="keyword">int</span> quorum;</span><br><span class="line">    <span class="comment">//在执行故障转移操作时，可以同时对新的主服务器进行同步的从服务器数量</span></span><br><span class="line">    <span class="keyword">int</span> paral1el_syncs;</span><br><span class="line">    <span class="comment">//刷新故障迁移状态的最大时限</span></span><br><span class="line">    <span class="keyword">mstime_t</span> failover_timeout;</span><br><span class="line">  	<span class="comment">// 当该实例为主服务器时，该属性记录其从服务器</span></span><br><span class="line">  	dict slaves;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125; sentinelRedisInstance;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><strong>创建连向主服务器的网络连接</strong></p>
+<p>Sentinel会为监视的主服务器创建两个异步网络连接：</p>
+<ul>
+<li><strong>命令连接</strong>：专用于向主服务器发送命令，接收命令回复。</li>
+<li><strong>订阅连接</strong>：专用于订阅主服务器<code>__sentinel__:hello</code>频道。（由于Redis的发布订阅消息不会保存，客户端断线就会丢失，为了不丢失，必须使用专门的频道连接）</li>
+</ul>
+<h3 id="获取主从服务器信息"><a href="#获取主从服务器信息" class="headerlink" title="获取主从服务器信息"></a>获取主从服务器信息</h3><p>Sentinel默认<strong>10秒一次</strong>通过命令连接向被监视的主服务器发送<strong>INFO</strong>命令，获取主服务器信息。</p>
+<p>主要获取主服务器本身信息（如服务器运行ID），下属从服务器信息（如ip，port，offset）。对主服务器实例和从服务器实例的相应属性进行更新，如果没有某个从服务器的信息就会创建一个实例结构，放到主服务器实例的slaves字典中，键为ip+端口，值为sentinelRedisInstance。</p>
+<p>除了创建新实例，还会创建连接到从服务器的<strong>命令连接</strong>和<strong>订阅连接</strong>。在创建命令连接后，Sentinel默认<strong>10秒一次</strong>通过命令连接向从服务器并发送<strong>INFO</strong>命令，获取从服务器信息（运行ID，角色，ip和端口，优先级等）。之后根据这些信息对从服务器的实例结构进行更新。</p>
+<h3 id="向主服务器和从服务器发送消息"><a href="#向主服务器和从服务器发送消息" class="headerlink" title="向主服务器和从服务器发送消息"></a>向主服务器和从服务器发送消息</h3><p>sentinel默认以两秒一次，通过命令连接向服务器的<code>__sentinel__:hello</code>频道发送消息，命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PUBLISH __sentinel__:hello &quot;&lt;s_ip&gt;,&lt;s_port&gt;,&lt;s_runid&gt;,&lt;s_epoch&gt;,&lt;m_name&gt;,&lt;m_ip&gt;,&lt;m_port&gt;,&lt;m_epoch&gt;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>参数包含sentinel本身<code>（s_...）</code>和主服务器<code>（m_...）</code>的运行ID，ip，端口号，配置纪元等参数。</p>
+<h3 id="接收来自主服务器和从服务器的频道信息"><a href="#接收来自主服务器和从服务器的频道信息" class="headerlink" title="接收来自主服务器和从服务器的频道信息"></a>接收来自主服务器和从服务器的频道信息</h3><p>Sentinel与一个主服务器或从服务器建立订阅连接后，会发送<code>SUBSCRIBE _sentinel_:hello</code>命令。</p>
+<p>也就是Sentinel通过命令连接发送信息到频道，又通过订阅连接接收频道中的信息。一个Sentinel发的信息也会被其他Sentinel接收，根据信息记录的Sentinel运行id和接收信息的Sentinel<strong>运行id是否相同</strong>，来决定<strong>是否处理</strong>这条消息。通过这种透明的沟通机制，Sentinel可以对各自监听的服务器信息进行更新。</p>
+<p><strong>更新sentinels字典</strong></p>
+<p>根据接收而来的消息，Sentinel会更新实例结构中sentinels字典保存的所有Sentinel实例的信息。键为Sentinel的ip+端口，值为某个Sentinel的实例。消息接收者会检查发送消息的Sentinel（源sentinel）结构是否在sentinels字典，若存在则更新，没有则创建实例，和自己相同的sentinel不会被放入。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">sentinelRedisInstance</span>&#123;</span></span><br><span class="line">    dict *sentinels;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过这种发布订阅的方式，Sentinel不需要各自发信息告诉对方，而是监视同一个主服务器的多个Sentinel自动发现对方。</p>
+<p><strong>创建连向其他Sentinel的命令连接</strong></p>
+<p>sentinel也会为对方互相创建命令连接，最终监视同一主服务器的多个sentinel会形成一个<strong>网络</strong>。但他们互相之间<strong>不会创建订阅连接</strong>，因为他们通过主或从服务器发来的频道来发现未知的sentinel。</p>
+<p>下图展示了多个sentinel通过命令连接形成网络：</p>
+<p><img src="https://blogimg-picgo.oss-cn-beijing.aliyuncs.com/img/202201051117254.jpg" alt="img"></p>
+<h3 id="检测主观下线状态"><a href="#检测主观下线状态" class="headerlink" title="检测主观下线状态"></a>检测主观下线状态</h3><p>Sentinel默认每秒与创建命令连接的实例（主服务器，从服务器，其他sentinel）发送PING命令，通过回复判断是否在线。如果实例返回除了<code>+PONG</code>，<code>-LOADING</code>，<code>-MASTERRDOWN</code>之外的回复或未及时回复，就认为是<strong>无效回复</strong>。</p>
+<p>根据配置文件的<code>down-after-milliseconds</code>指定的<strong>主观下线所需时长内</strong>是否一直无效回复，来判断实例是否已经主观下线。下线了就将实例的的flags标识属性打开<code>SRI_S_DOWN</code>标识。由于每个Sentinel中的主观下线时间配置都可以不同，所有有可能<strong>某个Sentinel判断主观下线时，另一个Sentinel认为在线状态</strong>。</p>
+<h3 id="检查客观下线状态"><a href="#检查客观下线状态" class="headerlink" title="检查客观下线状态"></a>检查客观下线状态</h3><p>当Sentinel判断主服务器为主观下线时，还会向其他Sentinel询问，得到足量数量的已下线判断后，就会判定服务器为客观下线，并执行故障转移。</p>
+<p><strong>发送sentinel is-master-down-by-addr命令</strong></p>
+<p>Sentinel使用：<code>SENTINEL is-master-down-by-addr &lt;ip&gt; &lt;port&gt; &lt;current. epoch&gt; &lt;runid&gt;</code>命令询问其他Sentinel是否同意主服务器下线。这些参数分别是Sentinel的ip，端口，配置纪元和运行id。</p>
+<p><strong>接收sentinel is-master-down-by-addr命令</strong></p>
+<p>其他哨兵节点接收并返回三个参数的Multi Bulk回复：</p>
+<ol>
+<li><down_state>：是对主服务器的检查结果，1表示已下线；0表示未下线。</li>
+<li><leader_runid>：如果是*，表示该命令用于检测服务器状态；如果是Sentinel的运行id用于选举领头Sentinel。</li>
+<li><leader_epoch>：选举计数器，用于选举领头sentinel。</li>
+</ol>
+<p><strong>接收sentinel is-master-down-by-addr命令的回复</strong></p>
+<p>统计其他Sentinel同意主服务器已下线数量，当数量超过配置值（quorum参数）时，sentinel会将主服务器实例的flags属性的<code>SRI_O_DOWN</code>属性打开，表示已进入客观下线状态。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">sentinelRedisInstance</span> &#123;</span></span><br><span class="line">    <span class="comment">//判断这个实例为客观下线所需的支持投票数量</span></span><br><span class="line">    <span class="keyword">int</span> quorum;</span><br><span class="line">    ...</span><br><span class="line">&#125; sentinelRedisInstance;</span><br></pre></td></tr></table></figure>
+
+<h3 id="选举领头Sentinel"><a href="#选举领头Sentinel" class="headerlink" title="选举领头Sentinel"></a>选举领头Sentinel</h3><p>当主服务器被判断为客观下线时，sentinel会协商选举领头sentinel，并由领头sentinel对下线主服务器执行故障转移操作。</p>
+<p>当<code>SENTINEL is-master-down-by-addr</code>命令已经确认主服务器客观下线时，Sentinel还会<strong>再发送</strong>带有选举性质的该命令，并且带上自己的运行ID。如果接收命令的Sentinel还没设置局部领头时，就会将这个运行ID作为自己的<strong>Multi Bulk回复参数</strong>。根据回复参数来判断多少sentinel将自己设置为局部领头。可能根据网络延迟，有的Sentinel命令比其他Sentinel都先到达，并且胜出（必须有<strong>半数以上</strong>的票），那么就由它负责故障转移。</p>
+<p>若一次选举没有产生领头Sentinel，一段时间后再次选举，直到选出为止。</p>
+<h3 id="故障转移"><a href="#故障转移" class="headerlink" title="故障转移"></a>故障转移</h3><p>故障转移包括3步：</p>
+<ol>
+<li>在已下线的主服务器属下从服务器里选出一个将其转为主服务器。</li>
+<li>让其他从服务器都复制新主服务器。</li>
+<li>当原来的主服务器再次上线时，让他成为新主服务器的从服务器。</li>
+</ol>
+<p><strong>选出新主服务器</strong></p>
+<p>如何选新的主服务器？Sentinel会将所有从服务器放入列表，<strong>一项一项</strong>过滤：</p>
+<ul>
+<li>删除处于下线或断线状态的从服务器。</li>
+<li>删除最近5秒没有回复过领头<code>sentinel INFO</code>命令的从服务器。</li>
+<li>删除与已下线主服务器段开时间超过<code>down-after-milliseconds*10</code>毫秒的从服务器。</li>
+</ul>
+<p>然后根据<strong>优先级排序</strong>，相同则选<strong>偏移量最大</strong>的，再相同则选运行ID最小的。</p>
+<p>选出来之后，对这个从服务器发送<code>SLAVEOF no one</code>命令，然后以<strong>每秒一次</strong>的频率向它发送<code>INFO</code>命令，观察返回的role属性如果变成master，就表示顺利升级为主服务器了。</p>
+<p><strong>修改从服务器的复制目标</strong></p>
+<p>向所有其他从服务器发送<code>SLAVEOF</code>命令，让他们都去复制新的主服务器。</p>
+<p><strong>将旧的主服务器变为从服务器</strong></p>
+<p>当原来的主服务器上线时，Sentinel就会向它发送<code>SLAVEOF</code>命令，让他成为新主服务器的从服务器。</p>
+<h2 id="cluster集群"><a href="#cluster集群" class="headerlink" title="cluster集群"></a>cluster集群</h2><p>集群是Redis提供的<strong>分布式数据库</strong>方案，通过<strong>分片</strong>来进行数据共享并提供复制和故障转移的功能。主要对集群的节点，槽指派，命令执行，重新分片，转向，故障转移，消息进行介绍。</p>
+<h3 id="节点"><a href="#节点" class="headerlink" title="节点"></a>节点</h3><p>集群由多个节点组成，通过<code>CLUSTER MEET &lt;ip&gt; &lt;port&gt;</code>可以将节点连接起来。这个命令主要是将目标节点加入到当前Redis所在的集群中。下面从启动节点，集群相关数据结构，命令实现来介绍节点内容。</p>
+<p><strong>启动节点</strong></p>
+<p>Redis服务器在启动时会根据<code>cluster-enable</code>配置是否为yes来决定是否开启集群模式。</p>
+<p>集群中的节点除了使用redisServer，redisClient之外，还用<code>cluster.h/clusterNode</code>结构、<code>cluster.h/clusterLink</code>结构、<code>cluster.h/clusterState</code>结构来保存集群数据。</p>
+<p><strong>集群数据结构</strong></p>
+<p>集群的每个节点都会用clusterNode来保存：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">clusterNode</span> &#123;</span></span><br><span class="line">    <span class="comment">//创建节点的时间</span></span><br><span class="line">    <span class="keyword">mstime_t</span> ctime; .</span><br><span class="line">    <span class="comment">//节点的名字，由40个十六进制字符组成</span></span><br><span class="line">    <span class="keyword">char</span> name [REDIS_CLUSTER_NAMELEN] ; </span><br><span class="line">    <span class="comment">//节点标识</span></span><br><span class="line">    <span class="comment">//使用各种不同的标识值记录节点的角色(比如主节点或者从节点),</span></span><br><span class="line">    <span class="comment">//以及节点目前所处的状态(比如在线或者下线)。</span></span><br><span class="line">    <span class="keyword">int</span> flags;</span><br><span class="line">    <span class="comment">//节点当前的配置纪元，用于实现故障转移</span></span><br><span class="line">    <span class="keyword">uint64_t</span> configEpoch;</span><br><span class="line">    <span class="comment">//节点的IP地址</span></span><br><span class="line">    <span class="keyword">char</span> ip[REDIS_IP_STR_LEN] ;</span><br><span class="line">    <span class="comment">//节点的端口号</span></span><br><span class="line">    <span class="keyword">int</span> port;</span><br><span class="line">    <span class="comment">//保存连接节点所需的有关信息</span></span><br><span class="line">    clusterLink *link;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>link属性保存了连接节点所需的有关信息：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">clusterLink</span> &#123;</span></span><br><span class="line">    <span class="comment">//连接的创建时间</span></span><br><span class="line">    <span class="keyword">mstime_t</span> ctime ;</span><br><span class="line">    <span class="comment">// TCP 套接字描述符</span></span><br><span class="line">    <span class="keyword">int</span> fd;</span><br><span class="line">    <span class="comment">//输出缓冲区，保存着等待发送给其他节点的消息( message )。</span></span><br><span class="line">    sds sndbuf;</span><br><span class="line">    <span class="comment">//输入缓冲区，保存着从其他节点接收到的消息。</span></span><br><span class="line">    sds rcvbuf ;</span><br><span class="line">    <span class="comment">//与这个连接相关联的节点，如果没有的话就为NULL</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">clusterNode</span> <span class="title">node</span>;</span></span><br><span class="line">&#125; clusterLink;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>每个节点都保存一个集群状态，记录在当前节点下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">clusterState</span> &#123;</span></span><br><span class="line">    <span class="comment">//指向当前节点的指针</span></span><br><span class="line">    clusterNode *myself;</span><br><span class="line">    <span class="comment">//集群当前的配置纪元，用于实现故障转移</span></span><br><span class="line">    <span class="keyword">uint64_t</span> currentEpoch;</span><br><span class="line">    <span class="comment">//集群当前的状态:是在线还是下线</span></span><br><span class="line">    <span class="keyword">int</span> state;</span><br><span class="line">    <span class="comment">//集群中至少处理着一个槽的节点的数量（下一节谈）</span></span><br><span class="line">    <span class="keyword">int</span> size;</span><br><span class="line">    <span class="comment">//集群节点名单(包括myself节点)</span></span><br><span class="line">    <span class="comment">//键为节点名字，值为节点对应的clusterNode结构</span></span><br><span class="line">    dict *nodes;</span><br><span class="line">    ...</span><br><span class="line">&#125; clusterState;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><strong>CLUSTER MEET命令的实现</strong></p>
+<p>通过向节点A发送<code>CLUSTER MEET</code>命令，让目标节点B加入集群，进行<strong>握手</strong>，执行过程如下：</p>
+<ol>
+<li>客户端发送该命令给节点A，节点A会创建一个节点B的clusterNode结构，添加到clusterState.nodes中。</li>
+<li>解析IP地址和端口号，向节点B发送MEET消息（最后一节会讲消息）。</li>
+<li>同理，节点B收到后，会为A创建clusterNode结构并添加到nodes。</li>
+<li>节点B向A发送PONG消息。</li>
+<li>节点A收到后向B发送一条PING消息。</li>
+<li>节点B收到后直到A成功感知到B，握手完成。</li>
+</ol>
+<p><img src="https://blogimg-picgo.oss-cn-beijing.aliyuncs.com/img/202201051504000.jpg" alt="img"></p>
+<p>之后，节点A将节点B的信息通过<strong>Gossip协议</strong>（最后一节消息中将提到）传播给集群中的其他节点。</p>
+<h3 id="槽指派"><a href="#槽指派" class="headerlink" title="槽指派"></a>槽指派</h3><p>Redis通过分片方式保存键值对，集群的整个数据库被分为<strong>16384</strong>个槽（slot），数据库的每个键都属于某一个槽，每个节点可处理0~16384个槽。当集群中的<strong>每个槽都归某个节点</strong>管理，集群处于上线状态；但凡有一个没人管，集群处于下线状态。</p>
+<p>发送<code>CLUSTER ADDSLOTS &lt;slot&gt; [slot...]</code>命令，可以将槽委派给某个节点负责。下面介绍槽的实现。</p>
+<p><strong>记录节点的槽指派信息</strong></p>
+<p>clusterNode有slots和numslot属性记录了节点负责处理的槽：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">clusterNode</span>&#123;</span></span><br><span class="line">    <span class="comment">//二进制位数组，长度为16384/8=2048字节，</span></span><br><span class="line">    <span class="comment">//每个索引8位，根据0和1判断该槽是否被该节点负责</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> slot[<span class="number">16384</span>/<span class="number">8</span>];</span><br><span class="line">    <span class="comment">//负责处理的槽数量</span></span><br><span class="line">    <span class="keyword">int</span> numslots;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>比如该节点负责0~7的槽，存储结构如下：</p>
+<p><img src="https://blogimg-picgo.oss-cn-beijing.aliyuncs.com/img/202201051504094.png" alt="img"></p>
+<p>通过这种设计，检查某节点<strong>是否负责处理某个槽</strong>或者<strong>让节点负责某个槽</strong>的操作的时间复杂度都为**O(1)**。</p>
+<p><strong>传播节点的槽指派信息</strong></p>
+<p>节点除了将自己负责的槽记录在<code>clusterNode.slots</code>中，还会将这个数组通过<strong>消息发送</strong>给其他节点，让他们都知道自己负责什么槽。其他节点接收消息后，会对<code>clusterStaste.nodes</code>字典中对应的<code>clusterNode.slots</code>数据进行更新。</p>
+<p><strong>记录集群所有槽的指派信息</strong></p>
+<p>clusterState会维护集群中每个节点管理槽的情况：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">clusterState</span>&#123;</span></span><br><span class="line">    clusterNode *slots[<span class="number">16384</span>];</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果slot[i]指向空，说明该槽<strong>没有被节点管理</strong>；如果指向具体某个clusterNode，说明该槽由这个节点管理。</p>
+<p>总结一下，<code>clusterState.slots</code>数组记录<strong>集群中所有槽的信息</strong>；<code>clusterNode.slots</code>数组记录当前节点<strong>负责槽的信息</strong>。前者方便知道某个槽指派给谁，后者方便知道某个槽是否指派给自己，或者发送自己槽的指派信息。（因为被指派后，还需要向其他节点发送消息告知）。</p>
+<p><strong>CLUSTER ADDSLOTS命令的实现</strong></p>
+<p>这个命令的执行其实就是把上面讲的几小节知识给串起来。主要是用来指派槽给节点负责的，接收该命令后，首先会遍历所有传入的槽（命令入参）检查其是否都是未指派的，如果<strong>有一个被指派了就报错</strong>。如果都未指派，将这些槽委派给当前节点，更新<code>clusterState.slots</code>数组指向当前节点的clusterNode；然后将<code>clusterNode.slots</code>数组中对应的索引<strong>二进制位设置为1</strong>。最后，<strong>发送消息</strong>告诉集群中其他节点，自己负责这些槽。</p>
+<h3 id="在集群中执行命令"><a href="#在集群中执行命令" class="headerlink" title="在集群中执行命令"></a>在集群中执行命令</h3><p>当客户端对节点发送与数据库键有关的命令时，接收命令的节点会计算属于哪个槽，检查这个槽是否指派给自己（根据key的<strong>CRC-16校验和16383做与操作</strong>来确定槽号i，再根据clusterState.slots[i]是否指向当前节点的clusterNode判断是否自己负责的）。</p>
+<p>如果不是指派给自己的，就（找负责该槽的节点的ip和端口，指引客户端转向它）向客户端<strong>返回MOVED错误</strong>，引导客户端指向正确的节点并再次发送命令。</p>
+<blockquote>
+<p>注：通过<code>CLUSTER KEYSLOT &lt;key&gt;</code>可查看某个key对应的槽号。</p>
+</blockquote>
+<p><strong>MOVED错误</strong></p>
+<p>MOVED错误格式为：<code>MOVED &lt;slot&gt; &lt;ip&gt;:&lt;port&gt;</code></p>
+<p>在集群模式下，会被隐藏，客户端会进行自动转向并重发命令。节点的转向其实就是<strong>换对应套接字</strong>来发送命令。下面演示了对7000端口的节点操作键命令并被引导转向到真正存储该键的服务器（7001端口）的过程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1: 7000&gt; SET msg &quot;hello&quot;</span><br><span class="line">-&gt; Redirected to slot [6257] located at 127.0.0.1: 7001</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:7001&gt; GET msg</span><br><span class="line">&quot;hello&quot;</span><br></pre></td></tr></table></figure>
+
+<p><strong>节点数据库的实现</strong></p>
+<p>节点对数据的存储和单机Redis的实现是一样的，只不过节点只能使用0号库。还需要维护一个<code>slots_to_keys</code>跳跃表关联槽号和键。<strong>分值是槽号，成员就是键</strong>。当节点往数据库添加新键时，节点就会在<code>slots_to_keys</code>中进行<strong>关联</strong>，反之则删除关联。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">clusterState</span>&#123;</span></span><br><span class="line">    zskiplist *slots_to_keys;</span><br><span class="line">    ...</span><br><span class="line">&#125; clusterState;</span><br></pre></td></tr></table></figure>
+
+<h3 id="重新分片"><a href="#重新分片" class="headerlink" title="重新分片"></a>重新分片</h3><p>Redis集群的重新分片操作可以将任意数量已经指派给某个节点(源节点)的槽改为指派给另一个节点(目标节点)，并且相关槽所属的键值对也会从源节点被移动到目标节点。</p>
+<p>重新分片通过集群管理软件redis-trib执行，步骤如下：</p>
+<ol>
+<li>redis-trib对目标节点发送<code>CLUSTER SETSLOT &lt;slot&gt; IMPORTING &lt;source_id&gt;</code>命令，让<strong>目标节点准备</strong>好，要导入键值对了。</li>
+<li>redis-trib对源节点发送<code>CLUSTER SETSLOT &lt;slot&gt; MIGRATING &lt;target_id&gt;</code> 命令，让<strong>源节点准备好</strong>，要转移键值对了。</li>
+<li>redis-trib 向源节点发送<code>CLUSTER GETKEYSINSLOT &lt;slot&gt; &lt;count&gt;</code>命令， 获得最多count个属于槽slot的键值对的键名( key name )，这实际上就是个<strong>批量分片</strong>的意思。</li>
+<li>对于步骤3获得的每个键名，redis-trib都向源节点发送一个<code>MIGRATE &lt;target_ip&gt; &lt;target_ port&gt; &lt;key_name&gt; 0 &lt;timeout&gt;</code>命令，将被选中的键<strong>原子地</strong>从源节点迁移至目标节点。</li>
+<li>重复执行步骤3和步骤4，直到源节点保存的所有属于槽slot的键值对都被迁移至目标节点。</li>
+<li>redis-trib向集群中的任意一个节点发送<code>CLUSTER SETSLOT &lt;slot&gt; NODE &lt;target_ id&gt;</code>命令，将槽slot指派给目标节点这个信息，通过<strong>消息发送至整个集群</strong>，让所有节点感知。</li>
+</ol>
+<p>整体迁移的流程图：</p>
+<p><img src="https://blogimg-picgo.oss-cn-beijing.aliyuncs.com/img/202201051504126.jpg" alt="img"></p>
+<h3 id="ASK错误"><a href="#ASK错误" class="headerlink" title="ASK错误"></a>ASK错误</h3><p>当客户端向源节点发送与数据库键相关的命令，并且该键恰好属于<strong>被迁移的槽</strong>时，源节点会先查自己有没有，有就返回；<strong>没有则返回ASK错误</strong>，指引客户端向正在导入该槽的目标节点发送命令。这个命令和MOVED类似，不会直接打印错误。比如端口7000是源节点，”love”键的槽（16198槽）正在被迁移到7001就会这样：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1: 7000&gt; GET &quot;love&quot;</span><br><span class="line">-&gt; Redirected to slot [16198] located at 127.0.0.1: 7001</span><br><span class="line">&quot;you get the key &#x27;love&#x27;&quot;</span><br><span class="line">127.0.0.1: 7001&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>CLUSTER SETSLOT IMPORTING的实现</strong></p>
+<p>clusterState.importing_slots_from数组记录当前节点正在从其他节点导入的槽：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">clusterState</span>&#123;</span></span><br><span class="line">    clusterNode *importing_slots_from[<span class="number">16384</span>];</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一般情况下指向空，当执行<code>CLUSTER SETSLOT &lt;i&gt; IMPORTING &lt;source_id&gt;</code>时，会将目标节点（当前节点）<code>clusterState.importing_slots_from[i]</code>设置为source_id所代表节点的clusterNode。</p>
+<p><strong>CLUSTER SETSLOT MIGRATING的实现</strong></p>
+<p>clusterState结构的migrating_slot_to数组记录了当前节点正在迁移至其他节点的槽：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">clusterState</span>&#123;</span></span><br><span class="line">    clusterNode *migrating_slots_to[<span class="number">16384</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一般情况下指向空，当执行<code>CLUSTER SETSLOT &lt;i&gt; MIGRATING &lt;target_id&gt;</code>时，会将源节点<code>clusterState.migrating_slots_to[i]</code>设置为target_id所代表节点的clusterNode。</p>
+<p><strong>ASK错误</strong></p>
+<p>如果节点收到一个关于键key的命令请求，并且键key所属的槽正好指派给了该节点，那么该节点会尝试在自己的数据库里查找键key，找到则返回，如果没找到则检查<code>clusterState.migrating_slots_to[i]</code>，是否正在迁移，如果<strong>正在迁移</strong>，就向客户端返回ASK错误，引导其去<strong>导入槽的节点查询</strong>。</p>
+<p>客户端接收到ASK错误后，根据IP和端口，转向目标节点，然后先向目标节点发送<strong>ASKING</strong>命令，再重新发送要执行的命令。</p>
+<p><strong>ASKING命令</strong></p>
+<p>这个命令的唯一作用就是打开发送该命令客户端的<code>REDIS_ASKING</code>标识。有了这个标识后，节点会<strong>为正在导入的键执行命令</strong>。这个标识是<strong>一次性</strong>的，如果再对刚才的key执行相关操作，该节点会返回MOVED错误（因为重分片未结束，它不是负责该槽的节点）。下面表示相关判断过程：</p>
+<p><img src="https://blogimg-picgo.oss-cn-beijing.aliyuncs.com/img/202201051504212.jpg" alt="img"></p>
+<p><strong>ASK错误与MOVED错误的区别</strong></p>
+<p>这两个错误都会导致客户端转向：</p>
+<ul>
+<li>MOVED错误代表槽的负责权<strong>已经从一个节点到了另一个节点</strong>。</li>
+<li>ASK错误只是两个节点再迁移槽过程中使用的<strong>临时措施</strong>。</li>
+</ul>
+<h3 id="复制与故障转移"><a href="#复制与故障转移" class="headerlink" title="复制与故障转移"></a>复制与故障转移</h3><p>Redis集群中的节点分主节点和从节点，主节点用于处理槽，从节点用于复制某个主节点（相当于备份，<strong>不处理读请求</strong>），并在被复制节点下线时，代替下线主节点继续处理命令请求。</p>
+<p>接下来介绍节点的复制方法，检测节点是否下线方法及对下线节点故障转移方法。</p>
+<p><strong>设置从节点</strong></p>
+<p>向节点发送命令<code>CLUSTER REPLICATE &lt;node_id&gt;</code>可以让接收命令的节点成为指定节点的从节点并对主节点开始复制。主要过程是：</p>
+<ol>
+<li>接收命令节点在<code>clusterState.node</code>字典中找到node_id对应节点的clusterNode，然后将<code>clusterState.myself.slaveof</code>指向这个节点。</li>
+<li>修改<code>clusterState.myself.flags</code>属性，关闭<code>REDIS_NODE_MASTER</code>标识，<strong>打开<code>REDIS_NODE_SLAVE</code>标识</strong>，标识该节点成为从节点。</li>
+<li>调用复制代码，对主节点复制。</li>
+</ol>
+<p>当节点成为从节点并开始复制时，这个信息会通过消息发送给集群中其他节点。</p>
+<p><strong>故障检测</strong></p>
+<p>集群中每个节点都会定期向其他节点发送PING消息，如果没有在规定时间返回PONG消息，就会被标记位<strong>疑似下线</strong>。集群中各个节点会互相发送消息来交换各个节点的状态，当一个主节点A通过消息得知主节点B认为主节点C进入疑似下线状态，A会将B的<strong>下线报告添加</strong>到<code>clusterNode.fail_reports</code>链表中。</p>
+<p>链表中每个元素都由clusterNodeFailReport组成：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">clusterNodeFailReport</span>&#123;</span></span><br><span class="line">    <span class="comment">//报告目标节点已经下线的节点</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">clusterNode</span> *<span class="title">node</span>;</span></span><br><span class="line">    <span class="comment">//最后一次从node节点收到下线报告的时间</span></span><br><span class="line">    <span class="comment">//程序使用这个时间戳来检查下线报告是否过期</span></span><br><span class="line">    <span class="comment">// (与当前时间相差太久的下线报告会被删除)</span></span><br><span class="line">    <span class="keyword">mstime_t</span> time;</span><br><span class="line">&#125; <span class="keyword">typedef</span> clusterNodeFailReport;</span><br></pre></td></tr></table></figure>
+
+<p>在一个集群中，<strong>半数以上</strong>负责处理槽的主节点将某个主节点报告为疑似下线后，这个主节点将被<strong>标记为已下线</strong>。并向集群广播一条关于该主节点FAIL的消息，所有收到消息的节点都会将其标记为已下线。</p>
+<p><strong>故障转移</strong></p>
+<p>当一个从发现主节点下线后，开始故障转移。具体步骤：</p>
+<ol>
+<li>下线的主节点的所有从节点里面，会有一个从节点被选中。</li>
+<li>被选中的从节点会执行<code>SLAVEOF no one</code>命令，成为新的主节点。</li>
+<li>新的主节点会撤销对已下线主节点的槽指派，并将这些槽指派给自己。</li>
+<li>新的主节点向集群广播一条PONG消息，让其他节点立即知道新的主节点。</li>
+<li>新的主节点开始接收和自己负责处理的槽有关的命令请求，故障转移完成。</li>
+</ol>
+<p><strong>选举新的主节点</strong></p>
+<p>集群选举新主节点的具体过程：</p>
+<ol>
+<li>通过集群的配置纪元确定是哪一次选举，它是一个<strong>自增计数器</strong>，初始值为0。</li>
+<li>当集群里的某个节点开始一次故障转移操作时，集群配置纪元的值会被加一。</li>
+<li>集群里每个负责处理槽的主节点都有<strong>一次投票的机会</strong>，第一个向主节点要求投票的从节点将获得主节点的投票。</li>
+<li>当从节点发现自己正在复制的主节点进入已下线状态时，从节点会向集群<strong>广播</strong>一条 <code>CLUSTERMSG_TYPE_FAILOVER_AUTH_REQUEST</code>消息，要求所有收到这条消息并且具有投票权的主节点向这个从节点投票。</li>
+<li>如果一个主节点具有投票权(它正在负责处理槽)，并且这个主节点尚未投票给其他从节点，那么主节点将向要求投票的从节点返回一条<code>CLUSTERMSG_TYPE_FAILOVER_AUTH_ACK</code>消息，表示这个主节点支持从节点成为新的主节点。</li>
+<li>每个参与选举的从节点都会接收<code>CLUSTERMSG_TYPE_FAILOVER_AUTH_ACK</code>消息，并根据自己<strong>收到消息的条数</strong>来统计自己获得多少主节点的支持。</li>
+<li>如果集群里有N个具有投票权的主节点，那么当一个从节点收集到大于等于<strong>N/2+1</strong> 支持票时，这个从节点就会当选为新的主节点。</li>
+<li>配置纪元确定每个具有投票权的主节点只能投一次，所以如果有N个主节点进行投票，那么具有大于等于N/2+1张支持票的从节点只会有一个，这确保了新的主节点只会有一个。</li>
+<li>如果在一个配置纪元里没有从节点得到足够的票，那么集群进入一个新的配置纪元，并<strong>再次进行选举</strong>，直到选出新的主节点为止。</li>
+</ol>
+<h3 id="消息"><a href="#消息" class="headerlink" title="消息"></a>消息</h3><p>集群中节点主要通过发送消息来传递信息，主要有5种：</p>
+<ul>
+<li>MEET消息：发送者接收到客户端的<em>CLUSTER MEET</em>消息时，发送者向接收者发送MEET消息，<strong>请求加入</strong>发送者所在集群。</li>
+<li>PING消息：集群每个节点每隔一秒从已知节点<strong>随机选出5个</strong>节点，然后对<strong>最长时间没发</strong>PING消息的节点进行发送。除此之外，如果最后一次收到某节点的PONG消息的时间，<strong>超过</strong>配置的<code>cluster-node-timeout</code>选项的<strong>一半</strong>时，也会发送PING消息。</li>
+<li>PONG消息：应答MEET或PING消息。还可以通过PONG，告诉其他节点，刷新该节点的相关信息。</li>
+<li>FAIL消息：当某个主节点判断另一个主节点<strong>已经进入FAIL状态</strong>时，当前主节点会向集群<strong>广播</strong>一条关于已下线节点的FAIL消息。</li>
+<li>PUBLISH消息：当节点接收到PUBLISH命令时，执行这个命令，并向集群<strong>广播</strong>一条PUBLISH消息，所有接收到这条PUBLISH消息的节点都会执行相同的PUBLISH命令。</li>
+</ul>
+<p>一条消息由消息头和消息正文组成。</p>
+<p><strong>消息头</strong></p>
+<p>记录信息发送者的一些信息。比如发送者的当前纪元，发送者名字，发送者的槽指派信息等。接收者可根据发送者的信息来更新发送者的状态。消息头是一个<code>cluster.h/clusterMsg</code>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span>&#123;</span></span><br><span class="line">    <span class="comment">//消息的长度(包括这个消息头的长度和消息正文的长度)</span></span><br><span class="line">    uint32_ t totlen;</span><br><span class="line">    <span class="comment">//消息的类型</span></span><br><span class="line">    uint16_ t type;</span><br><span class="line">    <span class="comment">//消息正文包含的节点信息数量</span></span><br><span class="line">    <span class="comment">//只在发送MEET. PING、PONG这三种Gossip协议消息时使用</span></span><br><span class="line">    uint16_ t count;</span><br><span class="line">    <span class="comment">//发送者所处的配置纪元</span></span><br><span class="line">    uint64_ t currentEpoch;</span><br><span class="line">    <span class="comment">//如果发送者是一个主节点，那么这里记录的是发送者的配置纪元</span></span><br><span class="line">    <span class="comment">//如果发送者是一个从节点，那么这里记录的是发送者正在复制的主节点的配置纪元.</span></span><br><span class="line">    uint64_ t configEpoch;</span><br><span class="line">    <span class="comment">//发送者的名字(ID)</span></span><br><span class="line">    <span class="keyword">char</span> sender [REDIS_ CLUSTER_ NAMELEN] ;</span><br><span class="line">    <span class="comment">//发送者目前的槽指派信息</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> myslots [REDIS_ CLUSTER_ SLOTS/<span class="number">8</span>];</span><br><span class="line">    <span class="comment">//如果发送者是一个从节点，那么这里记录的是发送者正在复制的主节点的名字</span></span><br><span class="line">    <span class="comment">//如果发送者是一个主节点，那么这里记录的是REDIS_ NODE_NULL_NAME</span></span><br><span class="line">    <span class="comment">// (一个40字节长，值全为0的字节数组)</span></span><br><span class="line">    <span class="keyword">char</span> slaveof [REDIS_ CLUSTER_ NAMELEN] ;</span><br><span class="line">    <span class="comment">//发送者的端口号</span></span><br><span class="line">    uint16_ t port;</span><br><span class="line">    <span class="comment">//发送者的标识值</span></span><br><span class="line">    uint16_ t flags;</span><br><span class="line">    <span class="comment">//发送者所处集群的状态</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> state;</span><br><span class="line">    <span class="comment">//消息的正文(或者说，内容)</span></span><br><span class="line">    <span class="class"><span class="keyword">union</span> <span class="title">clusterMsgData</span> <span class="title">data</span>;</span></span><br><span class="line">&#125; clusterMsg;</span><br></pre></td></tr></table></figure>
+
+<p>其中消息正文是一个<code>cluster.h/clusterMsgData</code>结构：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">union</span> <span class="title">clusterMsgData</span>&#123;</span></span><br><span class="line">    <span class="comment">// MEET、 PING、PONG消息的正文</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span>&#123;</span></span><br><span class="line">        <span class="comment">//每条MEET、PING、pONG消息都包含两个</span></span><br><span class="line">        <span class="comment">//clusterMsgDataGossip结构</span></span><br><span class="line">        clusterMsgDataGossip[<span class="number">1</span>];</span><br><span class="line">    &#125; ping;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// FAIL消息的正文</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    		clusterMsgDatafail about;</span><br><span class="line">    &#125;fail;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//PUBLISH消息的正文</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span>&#123;</span></span><br><span class="line">        clusterMsgDataPublish msg;</span><br><span class="line">    &#125;publish;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//其他消息的正文...</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><strong>MEET、PING、PONG消息的实现</strong></p>
+<p>集群中的各个节点通过<strong>Gossip协议</strong>来交换各自关于不同节点的状态信息，Gossip协议由MEET、PING、PONG这三种消息实现，他们的的正文就是上面的ping结构体。</p>
+<p>因为共用消息正文，所以需要消息头的type属性来区分。每次发送这类消息时，发送者都从已知节点中<strong>随机选择两个节点</strong>保存到clusterMsgDataGossip，因此正文包含两个clusterMsgDataGossip结构：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">struct</span> <span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="comment">//节点的名字</span></span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">char</span> nodename [REDIS_CLUSTER_NAMELEN]; .</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="comment">//最后一次向该节点发送PING消息的时间戳</span></span></span></span><br><span class="line"><span class="function"><span class="params">    uint32_ t ping_sent;</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="comment">//最后一次从该节点接收PONG消息的时间戳</span></span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">uint32_t</span> pong_received;</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="comment">//节点的IP地址</span></span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">char</span> ip[<span class="number">16</span>];</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="comment">//节点的墙口号</span></span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">uint16_t</span> port;</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="comment">//节点的标识值</span></span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">uint16_t</span> flags;</span></span></span><br><span class="line"><span class="function"><span class="params">&#125;clusterMsgDataGossip;</span></span></span><br><span class="line"><span class="function"><span class="params"></span></span></span><br></pre></td></tr></table></figure>
+
+<p>消息接收者会根据clusterMsgDataGossip包含的节点，看是否为第一次接触，如果是的话，需要进行一次握手，记录节点信息；如果已经存在于已知节点中，则对相关节点信息更新。</p>
+<p><strong>FAIL消息的实现</strong></p>
+<p>在集群节点较多的情况下，单纯使用Gossip会带来一些<strong>延迟</strong>，FAIL消息需要所有节点立刻知道某个主节点下线了，从而尽快判断<strong>是否需要标记为下线或故障转移</strong>。消息正文是一个<code>cluster.h/clusterMsgDatafail</code>结构：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span>&#123;</span></span><br><span class="line">    <span class="comment">//记录下线节点的名字</span></span><br><span class="line">    <span class="keyword">char</span> nodename[REDIS_CLUSTER_NAMELEN]</span><br><span class="line">&#125;clusterMsgDataFail;</span><br></pre></td></tr></table></figure>
+
+<p>因为名字都是集群内唯一的，所以可以这么保存。</p>
+<p><strong>PUBLISH消息的实现</strong></p>
+<p>当集群的某个节点发送<code>PUBLISH &lt;channel&gt; &lt;message&gt;</code>时，会引发集群中所有节点都向channel发送消息。消息正文是一个<code>cluster.h/clusterMsgDataPublish</code>结构：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    uint32_ t channel_len;</span><br><span class="line">    uint32_ t message_len;</span><br><span class="line">    <span class="comment">//定义为8字节只是为了对齐其他消息结构</span></span><br><span class="line">    <span class="comment">//实际的长度由保存的内容决定</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> bulk_data[<span class="number">8</span>] ;</span><br><span class="line">&#125; clusterMsgDataPublish;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>bulk_data保存消息的channel和message参数。具体是根据对应参数长度识别的。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>复制章节主要讲述主从复制功能，通过复制偏移量判断<strong>是否数据不一致</strong>，然后根据复制积压缓冲区和运行id判断执行<strong>完全重同步还是部分重同步</strong>，从而解决断线重连后的系统资源损耗问题。命令传播的心跳检测<strong>1秒一次</strong>，由从服务器发送，保障网络通常，防止主服务器在不安全的情况下执行写命令。</p>
+<p>哨兵章节主要讲述哨兵的数据结构，命令实现，选举，故障转移等操作。Redis的哨兵集群模式是高可用的解决方案，默认每<strong>10秒一次</strong>向主从服务器发送<strong>INFO</strong>命令更新信息，主服务器下线或故障转移时会<strong>1秒一次</strong>。Sentinel每秒一次与创建命令连接的实例发送PING命令，根据配置的时间内未得到回复就标记为<strong>主观下线</strong>。然后询问其他Sentinel，得到足量下线判断后会标记为客观下线。发现客观下线的哨兵就会发起选举哨兵领头，根据规则（Raft算法），<strong>一半以上</strong>支持则成功担任并负责故障转移工作。根据配置规则向过滤不在线的从服务器，然后按优先级，偏移量，运行id排序选择主服务器并让从服务器都复制它。</p>
+<p>集群章节主要讲述Redis的cluster集群模式下的集群数据结构，实现原理，选举，故障转移等操作。这种集群模式提供了<strong>分布式的数据存储</strong>。每个节点都维护了集群状态，各个节点状态信息还有槽指派信息。集群将<strong>数据分区</strong>，按槽存储，key的<strong>CRC-16</strong>的校验码决定了存放于哪个槽，每个主节点都指派不同的槽。当对某个节点执行key的相关命令时，会先判断<strong>是否归这个槽负责</strong>，如果不是则产生MOVED错误引导客户端指向正确的节点。如果<strong>归这个槽负责并且key在重分片</strong>，就会产生ASK错误，引导客户端指向目标节点。发送ASKING后，才能执行相关读写命令。这种集群模式，<strong>主节点负责读写，从节点复制</strong>，作为一个备份。</p>
+<p>当从节点发现主节点下线，就进行故障转移，通过配置纪元选举出主节点，将原先槽指派给它，并且<strong>广播一条PONG</strong>消息，让其他节点知道。节点之间传递信息依赖消息，有MEET、PING、PONG、FAIL、PUBLISH消息。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">icbtbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://icbtbo.github.io/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/">https://icbtbo.github.io/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://icbtbo.github.io" target="_blank">sjc的搬砖小屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/redis/">redis</a></div><div class="post_share"><div class="social-share" data-image="/img/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/"><img class="prev-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Redis设计与实现:独立功能的实现</div></div></a></div><div class="next-post pull-right"><a href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/"><img class="next-cover" src="/img/default_bg.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Redis设计与实现:单机数据库的实现</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/01/05/Redis/Redis设计与实现-独立功能的实现/" title="Redis设计与实现:独立功能的实现"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-01-05</div><div class="title">Redis设计与实现:独立功能的实现</div></div></a></div><div><a href="/2022/01/04/Redis/Redis设计与实现-单机数据库的实现/" title="Redis设计与实现:单机数据库的实现"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-01-04</div><div class="title">Redis设计与实现:单机数据库的实现</div></div></a></div><div><a href="/2021/12/18/Redis/Redis设计与实现-数据结构与对象/" title="Redis设计与实现:数据结构与对象"><img class="cover" src="/img/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-12-18</div><div class="title">Redis设计与实现:数据结构与对象</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/niu.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">icbtbo</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">83</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">31</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/icbtbo"><i class="fab fa-github"></i><span>Github</span></a></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6"><span class="toc-number">1.</span> <span class="toc-text">复制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A7%E7%89%88%E6%9C%AC%E5%A4%8D%E5%88%B6%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.1.</span> <span class="toc-text">旧版本复制功能的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A7%E7%89%88%E5%A4%8D%E5%88%B6%E5%8A%9F%E8%83%BD%E7%9A%84%E7%BC%BA%E9%99%B7"><span class="toc-number">1.2.</span> <span class="toc-text">旧版复制功能的缺陷</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E7%89%88%E5%A4%8D%E5%88%B6%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.3.</span> <span class="toc-text">新版复制功能的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%83%A8%E5%88%86%E9%87%8D%E5%90%8C%E6%AD%A5%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.4.</span> <span class="toc-text">部分重同步的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PSYNC%E5%91%BD%E4%BB%A4%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.5.</span> <span class="toc-text">PSYNC命令的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E5%AE%8C%E6%95%B4%E7%9A%84%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E8%BF%87%E7%A8%8B"><span class="toc-number">1.6.</span> <span class="toc-text">一次完整的主从复制过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%83%E8%B7%B3%E6%A3%80%E6%B5%8B"><span class="toc-number">1.7.</span> <span class="toc-text">心跳检测</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sentinel%E6%9C%BA%E5%88%B6"><span class="toc-number">2.</span> <span class="toc-text">Sentinel机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%B9%B6%E5%88%9D%E5%A7%8B%E5%8C%96Sentinel"><span class="toc-number">2.1.</span> <span class="toc-text">启动并初始化Sentinel</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E4%B8%BB%E4%BB%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%BF%A1%E6%81%AF"><span class="toc-number">2.2.</span> <span class="toc-text">获取主从服务器信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%91%E4%B8%BB%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8C%E4%BB%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF"><span class="toc-number">2.3.</span> <span class="toc-text">向主服务器和从服务器发送消息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%E6%9D%A5%E8%87%AA%E4%B8%BB%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%92%8C%E4%BB%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E9%A2%91%E9%81%93%E4%BF%A1%E6%81%AF"><span class="toc-number">2.4.</span> <span class="toc-text">接收来自主服务器和从服务器的频道信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%B5%8B%E4%B8%BB%E8%A7%82%E4%B8%8B%E7%BA%BF%E7%8A%B6%E6%80%81"><span class="toc-number">2.5.</span> <span class="toc-text">检测主观下线状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E5%AE%A2%E8%A7%82%E4%B8%8B%E7%BA%BF%E7%8A%B6%E6%80%81"><span class="toc-number">2.6.</span> <span class="toc-text">检查客观下线状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%89%E4%B8%BE%E9%A2%86%E5%A4%B4Sentinel"><span class="toc-number">2.7.</span> <span class="toc-text">选举领头Sentinel</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB"><span class="toc-number">2.8.</span> <span class="toc-text">故障转移</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cluster%E9%9B%86%E7%BE%A4"><span class="toc-number">3.</span> <span class="toc-text">cluster集群</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8A%82%E7%82%B9"><span class="toc-number">3.1.</span> <span class="toc-text">节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A7%BD%E6%8C%87%E6%B4%BE"><span class="toc-number">3.2.</span> <span class="toc-text">槽指派</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8%E9%9B%86%E7%BE%A4%E4%B8%AD%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="toc-number">3.3.</span> <span class="toc-text">在集群中执行命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8D%E6%96%B0%E5%88%86%E7%89%87"><span class="toc-number">3.4.</span> <span class="toc-text">重新分片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ASK%E9%94%99%E8%AF%AF"><span class="toc-number">3.5.</span> <span class="toc-text">ASK错误</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E4%B8%8E%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB"><span class="toc-number">3.6.</span> <span class="toc-text">复制与故障转移</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF"><span class="toc-number">3.7.</span> <span class="toc-text">消息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:独立功能的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:独立功能的实现">Redis设计与实现:独立功能的实现</a><time datetime="2022-01-05T12:59:07.000Z" title="发表于 2022-01-05 20:59:07">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:多机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/05/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:多机数据库的实现">Redis设计与实现:多机数据库的实现</a><time datetime="2022-01-05T01:35:35.000Z" title="发表于 2022-01-05 09:35:35">2022-01-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:单机数据库的实现"/></a><div class="content"><a class="title" href="/2022/01/04/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Redis设计与实现:单机数据库的实现">Redis设计与实现:单机数据库的实现</a><time datetime="2022-01-04T06:38:05.000Z" title="发表于 2022-01-04 14:38:05">2022-01-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis设计与实现:数据结构与对象"/></a><div class="content"><a class="title" href="/2021/12/18/Redis/Redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" title="Redis设计与实现:数据结构与对象">Redis设计与实现:数据结构与对象</a><time datetime="2021-12-18T09:16:04.000Z" title="发表于 2021-12-18 17:16:04">2021-12-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用"><img src="/img/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kafka进阶篇：可靠性探究、应用、监控和高级应用"/></a><div class="content"><a class="title" href="/2021/11/25/kafka/kafka%E8%BF%9B%E9%98%B6%E7%AF%87%EF%BC%9A%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%8E%A2%E7%A9%B6%E3%80%81%E5%BA%94%E7%94%A8%E3%80%81%E7%9B%91%E6%8E%A7%E5%92%8C%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" title="kafka进阶篇：可靠性探究、应用、监控和高级应用">kafka进阶篇：可靠性探究、应用、监控和高级应用</a><time datetime="2021-11-25T01:59:17.000Z" title="发表于 2021-11-25 09:59:17">2021-11-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By icbtbo</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'pLWJLVgdxc6WLcEaFgEr2tQ2-gzGzoHsz',
+      appKey: 'OAmeyAUV6TdXoX5n1hSX4ELm',
+      placeholder: '请留下你的小脚印～',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      master: 'f94877d77182a6f9068fc12b5545e1f5',
+      tagMeta: ["博主","小伙伴","访客"],
+      friends: ["52dc4d80afb3aeab1d0deab1aa45a7b5","fd99ca470e7b5e8e2b4f76d6ed26d6cf"]
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/gh/HCLonely/Valine@latest/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>
